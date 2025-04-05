@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Coffee, UserPlus, Calendar, Phone, MapPin } from 'lucide-react';
 import { Navbar } from '../../shared/navigation/Navbar';
 import { Footer } from '../../shared/navigation/Footer';
+import authService from '../../../services/authService';
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -132,10 +133,6 @@ export function RegisterPage() {
     setRegisterError('');
     
     try {
-      // Esta es una simulación de llamada a la API
-      // Reemplazar con la llamada real a tu backend
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       // Preparar los datos para enviar al backend
       const userData = {
         name: formData.name,
@@ -143,22 +140,26 @@ export function RegisterPage() {
         email: formData.email,
         password: formData.password,
         address: formData.address,
-        birthday: formData.birthday
+        birthday: formData.birthday,
+        isVerified: false // Por defecto, el usuario no está verificado hasta confirmar el código
       };
       
-      // Simulación de registro exitoso
-      // En un caso real, aquí procesarías la respuesta del servidor
-      console.log('Registrando usuario:', userData);
+      // Llamada real al backend usando el servicio de autenticación
+      const response = await authService.registerClient(userData);
       
-      // Redireccionar al usuario a la página de inicio de sesión o principal
-      navigate('/iniciar-sesion', { 
+      console.log('Registro exitoso:', response);
+      
+      // Redirigir a la página de verificación de código
+      navigate('/verificar-codigo', { 
         state: { 
-          message: '¡Registro exitoso! Ahora puedes iniciar sesión.' 
+          email: formData.email,
+          message: '¡Usuario registrado con éxito! Por favor, verifica tu correo con el código que te hemos enviado.'
         } 
       });
     } catch (error) {
       console.error('Error de registro:', error);
-      setRegisterError('Hubo un problema al crear tu cuenta. Por favor, inténtalo de nuevo.');
+      const errorMessage = error.message || 'Hubo un problema al crear tu cuenta. Por favor, inténtalo de nuevo.';
+      setRegisterError(errorMessage);
     } finally {
       setIsLoading(false);
     }

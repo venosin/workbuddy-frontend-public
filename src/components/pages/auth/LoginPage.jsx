@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Coffee, LogIn } from 'lucide-react';
 import { Navbar } from '../../shared/navigation/Navbar';
 import { Footer } from '../../shared/navigation/Footer';
+import authService from '../../../services/authService';
 
 export function LoginPage() {
   const navigate = useNavigate();
@@ -54,22 +55,22 @@ export function LoginPage() {
     setLoginError('');
     
     try {
-      // Esta es una simulación de llamada a la API
-      // Reemplazar con la llamada real a tu backend
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Llamada real al backend usando el servicio de autenticación
+      const response = await authService.login(formData.email, formData.password);
       
-      // Simulación de respuesta exitosa
-      // En un caso real, aquí procesarías la respuesta del servidor
-      console.log('Iniciando sesión con:', formData);
+      console.log('Inicio de sesión exitoso:', response);
       
-      // Simular almacenamiento de token (reemplazar con JWT real)
-      localStorage.setItem('authToken', 'demo-token');
+      // El token ya se guarda en una cookie httpOnly desde el backend
+      // Guardamos el tipo de usuario y la ID para referencia en el frontend
+      localStorage.setItem('userType', response.message.split(' ')[0]); // 'clients', 'employees' o 'admin'
+      localStorage.setItem('userId', response.userId || '');
       
       // Redireccionar al usuario a la página principal
       navigate('/');
     } catch (error) {
       console.error('Error de inicio de sesión:', error);
-      setLoginError('Credenciales incorrectas. Por favor, inténtalo de nuevo.');
+      const errorMessage = error.message || 'Credenciales incorrectas. Por favor, inténtalo de nuevo.';
+      setLoginError(errorMessage);
     } finally {
       setIsLoading(false);
     }
