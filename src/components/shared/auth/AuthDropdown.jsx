@@ -1,24 +1,11 @@
-import { useState } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { LogIn, User, Settings, LogOut, ShoppingBag, Heart } from 'lucide-react';
+import { useAuth } from '../../../hooks/useAuth';
 
 export function AuthDropdown({ isOpen, onClose }) {
-  // Este estado simula si el usuario está autenticado o no
-  // En el futuro, se reemplazará con la lógica real de autenticación
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-
-  // Simula datos de usuario, en el futuro vendrán del backend
-  const user = isAuthenticated ? {
-    name: 'Usuario Demo',
-    email: 'usuario@ejemplo.com',
-    avatar: 'https://ui-avatars.com/api/?name=Usuario+Demo&background=0D8ABC&color=fff'
-  } : null;
-
-  // Para fines de demostración, esto permite cambiar entre estados de autenticado/no autenticado
-  const toggleAuth = () => {
-    setIsAuthenticated(!isAuthenticated);
-    // En la implementación real, esto sería reemplazado por el proceso real de login
-  };
+  // Usar el contexto de autenticación
+  const { user, isAuthenticated, logout, simulateSession } = useAuth();
 
   if (!isOpen) return null;
 
@@ -85,7 +72,7 @@ export function AuthDropdown({ isOpen, onClose }) {
             {/* Opción de cerrar sesión */}
             <div className="py-1">
               <button 
-                onClick={toggleAuth} 
+                onClick={logout} 
                 className="flex w-full items-center px-4 py-2 text-sm text-red-600 hover:bg-brown-100"
               >
                 <LogOut className="h-4 w-4 mr-3 text-red-500" />
@@ -124,7 +111,7 @@ export function AuthDropdown({ isOpen, onClose }) {
             {/* Botón para simular inicio de sesión (solo para demostración) */}
             <div className="px-4 py-2 border-t border-gray-200">
               <button 
-                onClick={toggleAuth}
+                onClick={simulateSession}
                 className="w-full px-4 py-2 bg-green-500 text-white text-sm font-medium rounded-md hover:bg-green-600 transition-colors"
               >
                 Demo: Simular Sesión

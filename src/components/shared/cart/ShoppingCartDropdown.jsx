@@ -1,68 +1,42 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ShoppingBag, X, Plus, Minus, Trash2, Gift, ShoppingCart } from 'lucide-react';
+import { useCart } from '../../../hooks/useCart';
 
 export function ShoppingCartDropdown({ isOpen, onClose }) {
-  // Estado simulado del carrito de compras
-  // En la implementación real, estos datos vendrán del backend
-  const [cartItems, setCartItems] = useState([
-    {
-      id: '1',
-      name: 'Taza de Café WorkBuddy',
-      price: 249.99,
-      quantity: 2,
-      image: 'https://placehold.co/200x200/e9d8c4/333333?text=Taza'
-    },
-    {
-      id: '2',
-      name: 'Café Molido Premium 250g',
-      price: 199.99,
-      quantity: 1,
-      image: 'https://placehold.co/200x200/e9d8c4/333333?text=Café'
-    }
-  ]);
+  // Usar el contexto del carrito para acceder al estado y funciones
+  const { 
+    items, 
+    loading, 
+    error, 
+    subtotal, 
+    total, 
+    discountApplied, 
+    discountAmount,
+    incrementQuantity, 
+    decrementQuantity, 
+    removeFromCart, 
+    applyDiscountCode,
+    refreshCart
+  } = useCart();
   
+  // Estado local solo para el código de descuento
   const [discountCode, setDiscountCode] = useState('');
-  const [discountApplied, setDiscountApplied] = useState(false);
-  const [discountAmount, setDiscountAmount] = useState(0);
+  const [discountMessage, setDiscountMessage] = useState('');
 
-  // Calcular subtotal
-  const subtotal = cartItems.reduce((total, item) => total + (item.price * item.quantity), 0);
-  
-  // Calcular total con descuento
-  const total = subtotal - discountAmount;
-
-  // Incrementar cantidad de un producto
-  const incrementQuantity = (itemId) => {
-    setCartItems(cartItems.map(item => 
-      item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
-    ));
-  };
-
-  // Decrementar cantidad de un producto
-  const decrementQuantity = (itemId) => {
-    setCartItems(cartItems.map(item => 
-      item.id === itemId && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
-    ));
-  };
-
-  // Eliminar un producto del carrito
-  const removeItem = (itemId) => {
-    setCartItems(cartItems.filter(item => item.id !== itemId));
-  };
-
-  // Aplicar código de descuento
-  const applyDiscountCode = () => {
-    // Simulación de aplicación de descuento
-    // En la implementación real, esto verificaría el código con el backend
-    if (discountCode.toLowerCase() === 'workbuddy10') {
-      const discountValue = subtotal * 0.1; // 10% de descuento
-      setDiscountAmount(discountValue);
-      setDiscountApplied(true);
+  // Función para aplicar código de descuento
+  const handleApplyDiscountCode = async () => {
+    if (!discountCode.trim()) {
+      setDiscountMessage('Por favor ingresa un código de descuento');
+      return;
+    }
+    
+    const result = await applyDiscountCode(discountCode);
+    
+    if (result) {
+      setDiscountMessage('¡Descuento aplicado correctamente!');
     } else {
-      // Mostrar mensaje de error (no implementado en este ejemplo)
-      setDiscountApplied(false);
-      setDiscountAmount(0);
+      setDiscountMessage('Código de descuento inválido');
     }
   };
 
@@ -85,9 +59,28 @@ export function ShoppingCartDropdown({ isOpen, onClose }) {
           </button>
         </div>
 
+        {loading && (
+          <div className="py-8 text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto"></div>
+            <p className="mt-2 text-sm text-gray-500">Cargando tu carrito...</p>
+          </div>
+        )}
+        
+        {error && (
+          <div className="py-4 px-3 bg-red-50 border-l-4 border-red-500 text-red-700">
+            <p className="text-sm">{error}</p>
+            <button 
+              onClick={refreshCart}
+              className="mt-2 text-sm text-red-700 underline"
+            >
+              Intentar de nuevo
+            </button>
+          </div>
+        )}
+        
         {/* Lista de productos en el carrito */}
         <div className="max-h-96 overflow-y-auto">
-          {cartItems.length === 0 ? (
+          {!loading && !error && items.length === 0 ? (
             <div className="py-8 text-center">
               <ShoppingCart className="mx-auto h-12 w-12 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-brown-900">Carrito vacío</h3>
@@ -107,7 +100,7 @@ export function ShoppingCartDropdown({ isOpen, onClose }) {
             </div>
           ) : (
             <ul role="list" className="divide-y divide-gray-200">
-              {cartItems.map((item) => (
+              {items.map((item) => (
                 <li key={item.id} className="py-4 flex">
                   <div className="flex-shrink-0 w-16 h-16 rounded-md overflow-hidden">
                     <img 
@@ -137,7 +130,7 @@ export function ShoppingCartDropdown({ isOpen, onClose }) {
                         <button 
                           onClick={() => decrementQuantity(item.id)} 
                           className="px-2 py-1 text-gray-600 hover:text-gray-700"
-                          disabled={item.quantity <= 1}
+                          disabled={item.quantity <= 1 || loading}
                         >
                           <Minus className="h-4 w-4" />
                         </button>
@@ -145,14 +138,16 @@ export function ShoppingCartDropdown({ isOpen, onClose }) {
                         <button 
                           onClick={() => incrementQuantity(item.id)} 
                           className="px-2 py-1 text-gray-600 hover:text-gray-700"
+                          disabled={loading}
                         >
                           <Plus className="h-4 w-4" />
                         </button>
                       </div>
                       <button 
                         type="button" 
-                        onClick={() => removeItem(item.id)}
+                        onClick={() => removeFromCart(item.id)}
                         className="font-medium text-red-600 hover:text-red-500"
+                        disabled={loading}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -164,7 +159,7 @@ export function ShoppingCartDropdown({ isOpen, onClose }) {
           )}
         </div>
 
-        {cartItems.length > 0 && (
+        {!loading && items.length > 0 && (
           <>
             {/* Sección de código de descuento */}
             <div className="mt-4 border-t border-gray-200 pt-4">
@@ -182,12 +177,18 @@ export function ShoppingCartDropdown({ isOpen, onClose }) {
                 />
                 <button
                   type="button"
-                  onClick={applyDiscountCode}
-                  className="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                  onClick={handleApplyDiscountCode}
+                  disabled={loading || !discountCode.trim()}
+                  className="ml-2 inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Aplicar
                 </button>
               </div>
+              {discountMessage && (
+                <p className={`mt-1 text-sm ${discountApplied ? 'text-green-600' : 'text-red-600'}`}>
+                  {discountMessage}
+                </p>
+              )}
               {discountApplied && (
                 <p className="mt-1 text-sm text-green-600">
                   ¡Descuento aplicado! Ahorraste ${discountAmount.toFixed(2)}

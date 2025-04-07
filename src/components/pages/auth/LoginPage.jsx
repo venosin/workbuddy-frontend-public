@@ -1,12 +1,15 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Coffee, LogIn } from 'lucide-react';
 import { Navbar } from '../../shared/navigation/Navbar';
 import { Footer } from '../../shared/navigation/Footer';
-import authService from '../../../services/authService';
+import { useAuth } from '../../../hooks/useAuth';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  // Usar el hook de autenticación en lugar del servicio directamente
+  const { login, isAuthenticated, user } = useAuth();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -44,6 +47,13 @@ export function LoginPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Efecto para redireccionar si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      navigate('/perfil');
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     
@@ -55,18 +65,16 @@ export function LoginPage() {
     setLoginError('');
     
     try {
-      // Llamada real al backend usando el servicio de autenticación
-      const response = await authService.login(formData.email, formData.password);
+      // Usar la función login del contexto de autenticación
+      const response = await login(formData.email, formData.password);
       
       console.log('Inicio de sesión exitoso:', response);
       
-      // El token ya se guarda en una cookie httpOnly desde el backend
-      // Guardamos el tipo de usuario y la ID para referencia en el frontend
-      localStorage.setItem('userType', response.message.split(' ')[0]); // 'clients', 'employees' o 'admin'
-      localStorage.setItem('userId', response.userId || '');
+      // El token y los datos de usuario ya se gestionan en el AuthProvider
+      // No necesitamos guardar nada en localStorage aquí
       
-      // Redireccionar al usuario a la página principal
-      navigate('/');
+      // Redireccionar al usuario al perfil
+      navigate('/perfil');
     } catch (error) {
       console.error('Error de inicio de sesión:', error);
       const errorMessage = error.message || 'Credenciales incorrectas. Por favor, inténtalo de nuevo.';
