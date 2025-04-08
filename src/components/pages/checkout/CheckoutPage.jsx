@@ -5,11 +5,22 @@ import { useCart } from '../../../hooks/useCart';
 import { useAuth } from '../../../hooks/useAuth';
 import { Navbar } from '../../shared/navigation/Navbar';
 import { Footer } from '../../shared/navigation/Footer';
+import { DiscountCodeInput } from '../../shared/cart/DiscountCodeInput';
 
 export function CheckoutPage() {
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
-  const { items, subtotal, total, discountAmount, loading, createOrder } = useCart();
+  const { 
+    items, 
+    subtotal, 
+    total, 
+    discountAmount, 
+    loading, 
+    createOrder, 
+    appliedCode, 
+    discountPercentage, 
+    applyDiscountCode 
+  } = useCart();
   
   const [formData, setFormData] = useState({
     shippingAdress: user?.address || '',
@@ -238,7 +249,14 @@ export function CheckoutPage() {
                 ))}
               </div>
               
-              <div className="space-y-2 border-t pt-4">
+              {/* Sección de código de descuento */}
+              <DiscountCodeInput 
+                onApplyCode={applyDiscountCode}
+                currentCode={appliedCode}
+                discount={discountPercentage}
+              />
+
+              <div className="space-y-2 border-t pt-4 mt-4">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Subtotal</span>
                   <span className="font-medium">${subtotal.toFixed(2)}</span>
@@ -246,7 +264,7 @@ export function CheckoutPage() {
                 
                 {discountAmount > 0 && (
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Descuento</span>
+                    <span className="text-gray-600">Descuento ({discountPercentage}%)</span>
                     <span className="font-medium text-green-600">-${discountAmount.toFixed(2)}</span>
                   </div>
                 )}

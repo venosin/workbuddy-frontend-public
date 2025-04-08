@@ -6,15 +6,20 @@ const API_URL = 'http://localhost:4000';
 // Configura axios para que incluya las cookies en las solicitudes
 axios.defaults.withCredentials = true;
 
-const userSettingsService = {
+export const userSettingsService = {
   // Obtener la configuración completa del usuario
-  getSettings: async () => {
+  getUserSettings: async () => {
     try {
       const response = await axios.get(`${API_URL}/wb/settings`);
       return response.data;
     } catch (error) {
       throw error.response ? error.response.data : new Error('Error al obtener configuración');
     }
+  },
+  
+  // Alias para mantener compatibilidad
+  getSettings: async () => {
+    return userSettingsService.getUserSettings();
   },
 
   // Actualizar las preferencias del usuario
@@ -67,5 +72,3 @@ const userSettingsService = {
     }
   }
 };
-
-export default userSettingsService;

@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react'
 import { User, ShoppingCart } from "lucide-react"
 import { AuthDropdown } from '../../shared/auth/AuthDropdown'
 import { ShoppingCartDropdown } from '../../shared/cart/ShoppingCartDropdown'
+import { useCart } from '../../../hooks/useCart'
 
 export function Navbar() {
   // Estado para controlar si el dropdown está abierto o cerrado
@@ -10,6 +11,9 @@ export function Navbar() {
   const [isCartDropdownOpen, setIsCartDropdownOpen] = useState(false);
   const authDropdownRef = useRef(null);
   const cartDropdownRef = useRef(null);
+  
+  // Obtener datos del carrito
+  const { items } = useCart();
 
   // Cerrar el dropdown cuando se hace clic fuera de él
   useEffect(() => {
@@ -92,9 +96,11 @@ export function Navbar() {
               onClick={toggleCartDropdown}
             >
               <ShoppingCart className="h-5 w-5" />
-              <span className="absolute -top-1 -right-1 bg-green-500 text-xs text-white font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                2
-              </span>
+              {items && items.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-green-500 text-xs text-white font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {items.length}
+                </span>
+              )}
             </button>
             <ShoppingCartDropdown 
               isOpen={isCartDropdownOpen} 

@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Coffee, UserPlus, Calendar, Phone, MapPin } from 'lucide-react';
 import { Navbar } from '../../shared/navigation/Navbar';
 import { Footer } from '../../shared/navigation/Footer';
-import authService from '../../../services/authService';
+import AuthContext from '../../../contexts/AuthContext';
 
 export function RegisterPage() {
   const navigate = useNavigate();
+  const { registerAndLogin } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
@@ -26,7 +27,27 @@ export function RegisterPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    
+    // Formateo especial para el número de teléfono
+    if (name === 'phoneNumber') {
+      // Eliminar cualquier carácter que no sea dígito
+      const numbersOnly = value.replace(/\D/g, '');
+      
+      // Limitar a 8 dígitos (sin contar el guion)
+      const truncated = numbersOnly.slice(0, 8);
+      
+      // Formatear con guion después de los primeros 4 dígitos
+      let formattedNumber = truncated;
+      if (truncated.length > 4) {
+        formattedNumber = `${truncated.slice(0, 4)}-${truncated.slice(4)}`;
+      }
+      
+      setFormData({ ...formData, [name]: formattedNumber });
+    } else {
+      // Para los demás campos, comportamiento normal
+      setFormData({ ...formData, [name]: value });
+    }
+    
     // Limpiar error del campo cuando el usuario escribe
     if (errors[name]) {
       setErrors({ ...errors, [name]: '' });
@@ -72,8 +93,14 @@ export function RegisterPage() {
     // Validar teléfono
     if (!formData.phoneNumber) {
       newErrors.phoneNumber = 'El número de teléfono es obligatorio';
-    } else if (!/^\d{9,12}$/.test(formData.phoneNumber.replace(/\D/g, ''))) {
-      newErrors.phoneNumber = 'Número de teléfono inválido';
+    } else {
+      // Verificar que sea un número con formato XXXX-XXXX (8 dígitos con guion en medio)
+      const phoneDigits = formData.phoneNumber.replace(/\D/g, '');
+      if (phoneDigits.length !== 8) {
+        newErrors.phoneNumber = 'El número debe tener 8 dígitos';
+      } else if (!/^\d{4}-\d{4}$/.test(formData.phoneNumber)) {
+        newErrors.phoneNumber = 'Formato inválido. Debe ser XXXX-XXXX';
+      }
     }
     
     // Validar dirección
@@ -141,19 +168,19 @@ export function RegisterPage() {
         password: formData.password,
         address: formData.address,
         birthday: formData.birthday,
-        isVerified: false // Por defecto, el usuario no está verificado hasta confirmar el código
+        isVerified: true // Asumimos verificación automática para permitir el login directo
       };
       
-      // Llamada real al backend usando el servicio de autenticación
-      const response = await authService.registerClient(userData);
+      // Usar la nueva función que registra y autentica en un solo paso
+      await registerAndLogin(userData);
       
-      console.log('Registro exitoso:', response);
+      console.log('Registro y login exitosos');
       
-      // Redirigir a la página de verificación de código
+      // Redirigir a la página de verificación de código, pero ya logueado
       navigate('/verificar-codigo', { 
         state: { 
           email: formData.email,
-          message: '¡Usuario registrado con éxito! Por favor, verifica tu correo con el código que te hemos enviado.'
+          message: '¡Usuario registrado con éxito! Tu cuenta ya está activa, pero por seguridad, por favor verifica tu correo con el código que te hemos enviado.'
         } 
       });
     } catch (error) {
@@ -379,10 +406,11 @@ export function RegisterPage() {
                         required
                         value={formData.phoneNumber}
                         onChange={handleChange}
+                        maxLength="9" // 8 dígitos + 1 guion
                         className={`appearance-none block w-full pl-10 px-3 py-2 border ${
                           errors.phoneNumber ? 'border-red-300' : 'border-gray-300'
                         } rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm`}
-                        placeholder="987654321"
+                        placeholder="XXXX-XXXX"
                       />
                     </div>
                     {errors.phoneNumber && (

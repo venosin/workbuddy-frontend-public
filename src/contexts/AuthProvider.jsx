@@ -136,6 +136,46 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(true);
   };
 
+  // Función para registrar y autenticar en un solo paso
+  const registerAndLogin = async (userData) => {
+    try {
+      setLoading(true);
+      // 1. Registrar el usuario
+      const registerResponse = await authService.registerClient(userData);
+      console.log('Registro exitoso:', registerResponse);
+      
+      // 2. Iniciar sesión automáticamente
+      const loginData = await authService.login(userData.email, userData.password);
+      
+      // 3. Construir objeto de usuario usando los datos de registro y login
+      const userId = loginData.userId || registerResponse.userId || 'unknown';
+      const userType = loginData.userType || 'client';
+      
+      // 4. Crear un objeto de usuario inicial con los datos del registro
+      const newUser = {
+        _id: userId,
+        id: userId,
+        userType: userType,
+        email: userData.email,
+        name: userData.name,
+        phoneNumber: userData.phoneNumber,
+        address: userData.address,
+        birthday: userData.birthday
+      };
+      
+      // 5. Actualizar el estado
+      setUser(newUser);
+      setIsAuthenticated(true);
+      setLoading(false);
+      
+      return registerResponse;
+    } catch (error) {
+      console.error('Error en registro con autenticación:', error);
+      setLoading(false);
+      throw error;
+    }
+  };
+
   // Proporcionar los valores y funciones del contexto
   const value = {
     user,
@@ -144,6 +184,7 @@ export function AuthProvider({ children }) {
     login,
     logout,
     simulateSession,
+    registerAndLogin,
     userType: authService.getUserType()
   };
 

@@ -6,6 +6,7 @@ import { ProductDetail } from './components/pages/tienda/ProductDetail'
 import { AboutPage } from './components/pages/about/AboutPage'
 import { PrivacyPolicyPage } from './components/pages/legal/PrivacyPolicyPage'
 import { TermsOfServicePage } from './components/pages/legal/TermsOfServicePage'
+import { CookieSettingsPage } from './components/pages/legal/CookieSettingsPage'
 import { LoginPage } from './components/pages/auth/LoginPage'
 import { RegisterPage } from './components/pages/auth/RegisterPage'
 import { VerifyCodePage } from './components/pages/auth/VerifyCodePage'
@@ -22,18 +23,22 @@ import { OrderDetail } from './components/pages/profile/OrderDetail'
 import { UserSettings } from './components/pages/profile/UserSettings'
 // Componente de administración
 import { AdminProductForm } from './components/pages/admin/AdminProductForm'
+import { DiscountCodesPage } from './components/pages/admin/DiscountCodesPage'
 // Componentes de checkout
 import { CheckoutPage } from './components/pages/checkout/CheckoutPage'
 import { OrderConfirmationPage } from './components/pages/checkout/OrderConfirmationPage'
 // Importar los proveedores
 import { AuthProvider } from './contexts/AuthProvider'
 import { CartProvider } from './contexts/CartProvider'
+// Importar componente de cookies
+import { CookieBanner } from './components/shared/CookieBanner'
 
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
+        <CookieBanner />
         <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/tienda" element={<TiendaPage />} />
@@ -41,6 +46,7 @@ function App() {
         <Route path="/nosotros" element={<AboutPage />} />
         <Route path="/politica-de-privacidad" element={<PrivacyPolicyPage />} />
         <Route path="/terminos-de-servicio" element={<TermsOfServicePage />} />
+        <Route path="/configuracion-de-cookies" element={<CookieSettingsPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/iniciar-sesion" element={<LoginPage />} />
         <Route path="/registro" element={<RegisterPage />} />
@@ -60,6 +66,7 @@ function App() {
         
         {/* Rutas de administración */}
         <Route path="/admin/productos/nuevo" element={<AdminProductForm />} />
+        <Route path="/admin/codigos-descuento" element={<DiscountCodesPage />} />
         
         {/* Rutas de checkout */}
         <Route path="/checkout" element={<CheckoutPage />} />

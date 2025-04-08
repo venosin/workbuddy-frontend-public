@@ -65,6 +65,32 @@ const ordersService = {
     } catch (error) {
       throw error.response ? error.response.data : new Error('Error al eliminar la orden');
     }
+  },
+  
+  // Obtener conteo de pedidos por estado
+  getOrdersCountByStatus: async () => {
+    try {
+      // Simulamos datos para desarrollo mientras se implementa el backend
+      // En un entorno real, esto sería:
+      // const response = await axios.get(`${API_URL}/user/orders/count-by-status`);
+      // return response.data;
+      
+      // Simulación de datos
+      return {
+        total: 5,
+        pendiente: 2,
+        procesando: 1,
+        enviado: 1,
+        entregado: 1
+      };
+    } catch (error) {
+      console.error('Error al obtener conteo de pedidos:', error);
+      // Devolver valores por defecto en caso de error
+      return {
+        total: 0,
+        pendiente: 0
+      };
+    }
   }
 };
 

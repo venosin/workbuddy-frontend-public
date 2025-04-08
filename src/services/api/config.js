@@ -3,7 +3,7 @@ import axios from 'axios';
 
 // Configura la URL base de tu API aquí (ajústala según tu configuración)
 // Basado en tu configuración del backend, todas las rutas comienzan con /wb/
-const API_URL = 'http://localhost:4000/wb';
+export const API_URL = 'http://localhost:4000/wb';
 
 // Crea una instancia de axios con la configuración básica
 const api = axios.create({

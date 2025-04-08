@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Navbar } from "../../shared/navigation/Navbar"
 import { Footer } from "../../shared/navigation/Footer"
 import { HeroSection } from "./sections/HeroSection"
@@ -13,7 +13,7 @@ export function TiendaPage() {
   const [searchTerm, setSearchTerm] = useState('')
 
   // Productos de ejemplo para cuando la API no devuelve datos
-  const sampleProducts = [
+  const sampleProducts = useMemo(() => [
     {
       _id: '507f1f77bcf86cd799439011',
       name: 'Computadora de Oficina',
@@ -92,7 +92,7 @@ export function TiendaPage() {
         filename: 'cuadernos.jpg'
       }
     }
-  ];
+  ], []);
 
   // Cargar productos al inicio
   useEffect(() => {
@@ -135,26 +135,58 @@ export function TiendaPage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [sampleProducts]);
 
   // Manejar búsquedas
   const handleSearch = (term) => {
     setSearchTerm(term);
     
-    if (!term.trim()) {
-      // Si no hay término, mostrar todos los productos
-      setProducts(sampleProducts);
-      return;
-    }
+    // Intentar obtener los productos de nuevo para asegurarnos de tener datos frescos
+    const fetchProductsForSearch = async () => {
+      setIsLoading(true);
+      try {
+        // Intentar obtener datos de la API
+        let data = await productsService.getProducts();
+        
+        // Si no hay datos, usar los de ejemplo
+        if (!data || data.length === 0) {
+          data = sampleProducts;
+        }
+        
+        // Si no hay término de búsqueda, mostrar todos los productos
+        if (!term.trim()) {
+          setProducts(data);
+        } else {
+          // Filtrar por término o categoría
+          const filteredProducts = data.filter(product => 
+            product.name?.toLowerCase().includes(term.toLowerCase()) ||
+            product.description?.toLowerCase().includes(term.toLowerCase()) ||
+            product.category?.toLowerCase() === term.toLowerCase()
+          );
+          
+          setProducts(filteredProducts);
+        }
+        
+        setError(null);
+      } catch (err) {
+        console.error('Error al buscar productos:', err);
+        // Si falla, usar datos de ejemplo filtrados
+        if (!term.trim()) {
+          setProducts(sampleProducts);
+        } else {
+          const filteredProducts = sampleProducts.filter(product => 
+            product.name.toLowerCase().includes(term.toLowerCase()) ||
+            product.description.toLowerCase().includes(term.toLowerCase()) ||
+            product.category.toLowerCase() === term.toLowerCase()
+          );
+          setProducts(filteredProducts);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // Filtrar localmente entre los productos disponibles
-    const filteredProducts = sampleProducts.filter(product => 
-      product.name.toLowerCase().includes(term.toLowerCase()) ||
-      product.description.toLowerCase().includes(term.toLowerCase()) ||
-      product.category.toLowerCase().includes(term.toLowerCase())
-    );
-    
-    setProducts(filteredProducts);
+    fetchProductsForSearch();
   };
 
   // Filtrar productos por categoría
@@ -163,9 +195,11 @@ export function TiendaPage() {
   };
 
   // Productos por categoría
+  const electronicProducts = getProductsByCategory('electronica');
   const officeProducts = getProductsByCategory('oficina');
-  const stationeryProducts = getProductsByCategory('papeleria');
   const techProducts = getProductsByCategory('tecnologia');
+  const stationeryProducts = getProductsByCategory('papeleria');
+  const furnitureProducts = getProductsByCategory('muebles');
 
   return (
     <div className="flex min-h-screen flex-col bg-brown-100">
@@ -192,8 +226,17 @@ export function TiendaPage() {
             <ProductsSection id="search-results" title={`Resultados para "${searchTerm}"`} products={products} />
           ) : (
             <>
+              {electronicProducts.length > 0 && (
+                <ProductsSection id="electronic-products" title="Electrónica" products={electronicProducts} />
+              )}
+
               {officeProducts.length > 0 && (
-                <ProductsSection id="office-supplies" title="Productos de Oficina" products={officeProducts} />
+                <ProductsSection 
+                  id="office-supplies" 
+                  title="Productos de Oficina" 
+                  products={officeProducts} 
+                  bgColor="bg-brown-200/50"
+                />
               )}
 
               {techProducts.length > 0 && (
@@ -201,15 +244,24 @@ export function TiendaPage() {
                   id="tech-products"
                   title="Tecnología"
                   products={techProducts}
-                  bgColor="bg-brown-200/50"
                 />
               )}
 
               {stationeryProducts.length > 0 && (
-                <ProductsSection id="stationery" title="Papelería" products={stationeryProducts} />
+                <ProductsSection 
+                  id="stationery" 
+                  title="Papelería" 
+                  products={stationeryProducts} 
+                  bgColor="bg-brown-200/50"
+                />
               )}
 
-              {!officeProducts.length && !techProducts.length && !stationeryProducts.length && (
+              {furnitureProducts.length > 0 && (
+                <ProductsSection id="furniture" title="Muebles" products={furnitureProducts} />
+              )}
+
+              {!electronicProducts.length && !officeProducts.length && !techProducts.length && 
+               !stationeryProducts.length && !furnitureProducts.length && (
                 <div className="text-center py-12">
                   <p className="text-xl text-brown-700">No hay productos disponibles en este momento.</p>
                 </div>

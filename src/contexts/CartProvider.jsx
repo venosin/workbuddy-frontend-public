@@ -2,6 +2,7 @@ import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../hooks/useAuth';
 import cartService from '../services/cartService';
 import ordersService from '../services/ordersService';
+import discountCodeService from '../services/discountCodeService';
 
 // Crear el contexto
 const CartContext = createContext();
@@ -19,6 +20,8 @@ export function CartProvider({ children }) {
   const [error, setError] = useState(null);
   const [discountApplied, setDiscountApplied] = useState(false);
   const [discountAmount, setDiscountAmount] = useState(0);
+  const [appliedCode, setAppliedCode] = useState(null);
+  const [discountPercentage, setDiscountPercentage] = useState(0);
 
   // Función para cargar el carrito del usuario
   const loadCart = useCallback(async () => {
@@ -148,40 +151,70 @@ export function CartProvider({ children }) {
   const addToCart = async (product, quantity = 1) => {
     if (!isAuthenticated) {
       setError('Debes iniciar sesión para agregar productos al carrito');
-      return;
+      return false;
     }
     
     try {
       setLoading(true);
+      setError(null); // Limpiar errores previos
       
-      if (!cartId) {
+      // Verificar si tenemos un carrito válido
+      let currentCartId = cartId;
+      
+      if (!currentCartId) {
         // Si no hay un carrito, creamos uno nuevo
+        console.log('Creando nuevo carrito...');
         const newCart = await cartService.createCart();
         setCart(newCart);
         setCartId(newCart._id);
+        currentCartId = newCart._id;
       }
       
-      // Añadir el producto al carrito
-      const updatedCart = await cartService.addProductToCart(cartId, product._id, quantity);
+      // Añadir el producto al carrito usando el ID correcto
+      console.log(`Añadiendo producto ${product._id} al carrito ${currentCartId}`);
+      const updatedCart = await cartService.addProductToCart(currentCartId, product._id, quantity);
       
-      // Actualizar el estado local
+      if (!updatedCart) {
+        throw new Error('El servidor no devolvió un carrito actualizado');
+      }
+      
+      console.log('Carrito actualizado:', updatedCart);
+      
+      // Actualizar el estado local del carrito
       setCart(updatedCart);
       
-      // Transformar los productos para que coincidan con el formato esperado
-      const cartItems = updatedCart.products.map(item => ({
-        id: item.idProduct._id || item.idProduct,
-        name: item.idProduct.name || 'Producto',
-        price: item.idProduct.price || 0,
-        quantity: item.quantity,
-        image: item.idProduct.imagery?.url || 'https://placehold.co/200x200/e9d8c4/333333?text=Producto'
-      }));
-      
-      setItems(cartItems);
+      // Procesar y transformar los productos para el estado local
+      if (updatedCart.products && Array.isArray(updatedCart.products)) {
+        const cartItems = updatedCart.products.map(item => {
+          // Determinar si idProduct es un objeto completo o solo un ID
+          const productData = item.idProduct || {};
+          const productId = typeof productData === 'object' ? productData._id : productData;
+          const productName = typeof productData === 'object' ? productData.name : product.name;
+          const productPrice = typeof productData === 'object' ? productData.price : product.price;
+          const productImage = 
+            (typeof productData === 'object' && productData.imagery?.url) ||
+            product.imagery?.url ||
+            'https://placehold.co/200x200/e9d8c4/333333?text=Producto';
+          
+          return {
+            id: productId,
+            name: productName || 'Producto',
+            price: productPrice || 0,
+            quantity: item.quantity || 1,
+            image: productImage
+          };
+        });
+        
+        console.log('Actualizando items del carrito:', cartItems);
+        setItems(cartItems);
+      } else {
+        console.warn('El carrito actualizado no contiene productos válidos');
+      }
       
       return true;
     } catch (error) {
       console.error('Error al añadir al carrito:', error);
-      setError('No se pudo añadir el producto al carrito');
+      setError('No se pudo añadir el producto al carrito: ' + (error.message || 'Error desconocido'));
       return false;
     } finally {
       setLoading(false);
@@ -287,34 +320,61 @@ export function CartProvider({ children }) {
   // Función para aplicar un código de descuento
   const applyDiscountCode = async (code) => {
     try {
-      if (!cartId || !code) return;
+      // Si no hay código, eliminamos cualquier descuento aplicado
+      if (!code) {
+        setDiscountApplied(false);
+        setDiscountAmount(0);
+        setAppliedCode(null);
+        setDiscountPercentage(0);
+        return { success: true, message: 'Código eliminado' };
+      }
+      
+      if (!cartId) {
+        throw new Error('No hay carrito activo');
+      }
       
       setLoading(true);
       
-      // En una implementación real, aquí llamarías a tu API para validar y aplicar el código
-      // Por ahora, simulamos un descuento del 10% si el código es 'WORKBUDDY10'
-      if (code.toUpperCase() === 'WORKBUDDY10') {
-        const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
-        const discount = subtotal * 0.1; // 10% de descuento
-        
-        setDiscountApplied(true);
-        setDiscountAmount(discount);
-        
-        // En una implementación real, actualizarías el carrito en el backend
-        // const updatedCart = await cartService.applyDiscountCode(cartId, code);
-        // setCart(updatedCart);
-        
-        return true;
+      // Verificar el código con el backend
+      const result = await discountCodeService.getCodeByCode(code);
+      
+      // Si el resultado es un array vacío, el código no existe
+      if (!result || result.length === 0) {
+        throw new Error('Código inválido');
       }
       
-      setDiscountApplied(false);
-      setDiscountAmount(0);
-      return false;
+      const discountCode = result[0];
+      
+      // Verificar si el código está activo
+      if (!discountCode.isActive) {
+        throw new Error('Este código ha expirado');
+      }
+      
+      // Calcular el descuento basado en el porcentaje
+      const percentage = discountCode.percentage || 0;
+      const subtotal = items.reduce((total, item) => total + (item.price * item.quantity), 0);
+      const discount = subtotal * (percentage / 100);
+      
+      setDiscountApplied(true);
+      setDiscountAmount(discount);
+      setAppliedCode(code);
+      setDiscountPercentage(percentage);
+      
+      // En una implementación completa, actualizarías el carrito en el backend
+      // const updatedCart = await cartService.applyDiscountCode(cartId, discountCode._id);
+      // setCart(updatedCart);
+      
+      return { 
+        success: true, 
+        code: discountCode.code,
+        percentage: percentage,
+        message: `Código aplicado: ${percentage}% de descuento`
+      };
       
     } catch (error) {
       console.error('Error al aplicar código de descuento:', error);
       setError('No se pudo aplicar el código de descuento');
-      return false;
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -405,6 +465,8 @@ export function CartProvider({ children }) {
     total,
     discountApplied,
     discountAmount,
+    appliedCode,
+    discountPercentage,
     addToCart,
     incrementQuantity,
     decrementQuantity,

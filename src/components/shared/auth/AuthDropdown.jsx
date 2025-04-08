@@ -41,7 +41,7 @@ export function AuthDropdown({ isOpen, onClose }) {
                 Mi Perfil
               </Link>
               <Link 
-                to="/mis-pedidos" 
+                to="/perfil/pedidos" 
                 className="flex items-center px-4 py-2 text-sm text-brown-700 hover:bg-brown-100"
                 onClick={onClose}
               >
@@ -49,15 +49,15 @@ export function AuthDropdown({ isOpen, onClose }) {
                 Mis Pedidos
               </Link>
               <Link 
-                to="/favoritos" 
+                to="/perfil/favoritos" 
                 className="flex items-center px-4 py-2 text-sm text-brown-700 hover:bg-brown-100"
                 onClick={onClose}
               >
                 <Heart className="h-4 w-4 mr-3 text-brown-500" />
-                Favoritos
+                Mis Favoritos
               </Link>
               <Link 
-                to="/configuracion" 
+                to="/perfil/configuracion" 
                 className="flex items-center px-4 py-2 text-sm text-brown-700 hover:bg-brown-100"
                 onClick={onClose}
               >

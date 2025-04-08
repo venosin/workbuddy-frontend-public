@@ -35,9 +35,15 @@ export function SearchBar({ onSearch }) {
           <div className="flex flex-wrap justify-center md:justify-end space-x-2 md:space-x-4 text-sm text-brown-700 mt-4 md:mt-0">
             <button 
               onClick={() => handleCategoryClick('')} 
-              className="hover:text-brown-900 transition-colors px-2 py-1 hover:bg-brown-100 rounded"
+              className="hover:text-brown-900 transition-colors px-2 py-1 hover:bg-brown-100 rounded font-medium"
             >
               Todos
+            </button>
+            <button 
+              onClick={() => handleCategoryClick('electronica')} 
+              className="hover:text-brown-900 transition-colors px-2 py-1 hover:bg-brown-100 rounded"
+            >
+              Electrónica
             </button>
             <button 
               onClick={() => handleCategoryClick('oficina')} 
@@ -56,6 +62,12 @@ export function SearchBar({ onSearch }) {
               className="hover:text-brown-900 transition-colors px-2 py-1 hover:bg-brown-100 rounded"
             >
               Papelería
+            </button>
+            <button 
+              onClick={() => handleCategoryClick('muebles')} 
+              className="hover:text-brown-900 transition-colors px-2 py-1 hover:bg-brown-100 rounded"
+            >
+              Muebles
             </button>
           </div>
         </div>
