@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Heart, Trash2, ShoppingCart } from 'lucide-react';
 import favoritesService from '../../../services/favoritesService';
+import { BackButton } from '../../shared/ui/BackButton';
 
 export function Favorites() {
   const [favorites, setFavorites] = useState([]);
@@ -87,6 +88,9 @@ export function Favorites() {
 
   return (
     <div>
+      <div className="mb-4">
+        <BackButton className="text-brown-600 hover:text-brown-800" label="Volver al inicio" toPath="/" />
+      </div>
       <h2 className="text-xl font-semibold text-brown-900 mb-6">Mis Favoritos</h2>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

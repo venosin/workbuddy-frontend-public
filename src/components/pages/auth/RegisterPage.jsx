@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Coffee, UserPlus, Calendar, Phone, MapPin } from 'lucide-react';
 import { Navbar } from '../../shared/navigation/Navbar';
 import { Footer } from '../../shared/navigation/Footer';
+import { BackButton } from '../../shared/ui/BackButton';
 import AuthContext from '../../../contexts/AuthContext';
 
 export function RegisterPage() {
@@ -209,6 +210,9 @@ export function RegisterPage() {
       
       <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-2xl mx-auto">
+          <div className="flex justify-start mb-4">
+            <BackButton className="text-brown-600 hover:text-brown-800" toPath="/" label="Volver al inicio" />
+          </div>
           <div className="text-center">
             <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100">
               <Coffee className="h-8 w-8 text-green-600" />

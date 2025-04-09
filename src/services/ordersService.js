@@ -1,18 +1,14 @@
-import axios from 'axios';
+import api from './api';
 
-// Configura la URL base
-const API_URL = 'http://localhost:4000';
-
-// Configura axios para que incluya las cookies en las solicitudes
-axios.defaults.withCredentials = true;
-
+// Servicio para gestionar órdenes (pedidos)
 const ordersService = {
-  // Obtener todos los pedidos
+  // Obtener todos los pedidos (admin)
   getOrders: async () => {
     try {
-      const response = await axios.get(`${API_URL}/orders`);
+      const response = await api.get('/orders');
       return response.data;
     } catch (error) {
+      console.error('Error al obtener pedidos:', error);
       throw error.response ? error.response.data : new Error('Error al obtener pedidos');
     }
   },
@@ -20,9 +16,10 @@ const ordersService = {
   // Obtener todos los pedidos del usuario actual
   getUserOrders: async () => {
     try {
-      const response = await axios.get(`${API_URL}/user/orders`);
+      const response = await api.get('/wb/orders/user');
       return response.data;
     } catch (error) {
+      console.error('Error al obtener pedidos del usuario:', error);
       throw error.response ? error.response.data : new Error('Error al obtener pedidos del usuario');
     }
   },
@@ -30,9 +27,10 @@ const ordersService = {
   // Obtener detalles de un pedido específico
   getOrderById: async (orderId) => {
     try {
-      const response = await axios.get(`${API_URL}/orders/${orderId}`);
+      const response = await api.get(`/orders/${orderId}`);
       return response.data;
     } catch (error) {
+      console.error('Error al obtener detalles del pedido:', error);
       throw error.response ? error.response.data : new Error('Error al obtener detalles del pedido');
     }
   },
@@ -40,9 +38,10 @@ const ordersService = {
   // Crear una nueva orden
   createOrder: async (orderData) => {
     try {
-      const response = await axios.post(`${API_URL}/orders`, orderData);
+      const response = await api.post('/orders', orderData);
       return response.data;
     } catch (error) {
+      console.error('Error al crear la orden:', error);
       throw error.response ? error.response.data : new Error('Error al crear la orden');
     }
   },
@@ -50,9 +49,10 @@ const ordersService = {
   // Actualizar el estado de una orden
   updateOrderStatus: async (orderId, statusData) => {
     try {
-      const response = await axios.put(`${API_URL}/orders/${orderId}`, statusData);
+      const response = await api.put(`/orders/${orderId}`, statusData);
       return response.data;
     } catch (error) {
+      console.error('Error al actualizar el estado de la orden:', error);
       throw error.response ? error.response.data : new Error('Error al actualizar el estado de la orden');
     }
   },
@@ -60,36 +60,11 @@ const ordersService = {
   // Eliminar una orden
   deleteOrder: async (orderId) => {
     try {
-      const response = await axios.delete(`${API_URL}/orders/${orderId}`);
+      const response = await api.delete(`/orders/${orderId}`);
       return response.data;
     } catch (error) {
+      console.error('Error al eliminar la orden:', error);
       throw error.response ? error.response.data : new Error('Error al eliminar la orden');
-    }
-  },
-  
-  // Obtener conteo de pedidos por estado
-  getOrdersCountByStatus: async () => {
-    try {
-      // Simulamos datos para desarrollo mientras se implementa el backend
-      // En un entorno real, esto sería:
-      // const response = await axios.get(`${API_URL}/user/orders/count-by-status`);
-      // return response.data;
-      
-      // Simulación de datos
-      return {
-        total: 5,
-        pendiente: 2,
-        procesando: 1,
-        enviado: 1,
-        entregado: 1
-      };
-    } catch (error) {
-      console.error('Error al obtener conteo de pedidos:', error);
-      // Devolver valores por defecto en caso de error
-      return {
-        total: 0,
-        pendiente: 0
-      };
     }
   }
 };

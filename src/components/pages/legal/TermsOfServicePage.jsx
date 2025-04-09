@@ -1,11 +1,15 @@
 import { Navbar } from "../../shared/navigation/Navbar";
 import { Footer } from "../../shared/navigation/Footer";
+import { BackButton } from "../../shared/ui/BackButton";
 
 export function TermsOfServicePage() {
   return (
     <div className="flex flex-col min-h-screen bg-brown-50">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-4">
+          <BackButton className="text-brown-600 hover:text-brown-800" />
+        </div>
         <h1 className="text-3xl font-bold text-brown-900 mb-6 text-center">Términos de Servicio</h1>
         
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">

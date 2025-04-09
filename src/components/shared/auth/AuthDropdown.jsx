@@ -41,7 +41,7 @@ export function AuthDropdown({ isOpen, onClose }) {
                 Mi Perfil
               </Link>
               <Link 
-                to="/perfil/pedidos" 
+                to="/orders" 
                 className="flex items-center px-4 py-2 text-sm text-brown-700 hover:bg-brown-100"
                 onClick={onClose}
               >

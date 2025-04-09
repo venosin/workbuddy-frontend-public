@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Phone, MapPin, Mail, Save, Upload } from 'lucide-react';
 import profileService from '../../../services/profileService';
+import { BackButton } from '../../shared/ui/BackButton';
 
 export function ProfileDetail() {
   const { profile, setProfile } = useOutletContext();
@@ -70,6 +71,9 @@ export function ProfileDetail() {
 
   return (
     <div>
+      <div className="mb-4">
+        <BackButton className="text-brown-600 hover:text-brown-800" label="Volver al inicio" toPath="/" />
+      </div>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold text-brown-900">Información Personal</h2>
         {!isEditing ? (

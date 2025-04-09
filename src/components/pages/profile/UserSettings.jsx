@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Bell, Lock, Plus, Pencil, Trash2, Check, MapPin } from 'lucide-react';
 import { userSettingsService } from '../../../services/userSettingsService';
+import { BackButton } from '../../shared/ui/BackButton';
 
 export function UserSettings() {
   const [settings, setSettings] = useState(null);
@@ -70,6 +71,9 @@ export function UserSettings() {
 
   return (
     <div className="space-y-6">
+      <div className="mb-4">
+        <BackButton className="text-brown-600 hover:text-brown-800" label="Volver al inicio" toPath="/" />
+      </div>
       {error && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
           <div className="flex">

@@ -26,7 +26,9 @@ import { AdminProductForm } from './components/pages/admin/AdminProductForm'
 import { DiscountCodesPage } from './components/pages/admin/DiscountCodesPage'
 // Componentes de checkout
 import { CheckoutPage } from './components/pages/checkout/CheckoutPage'
+import { OrderCheckoutPage } from './components/pages/checkout/OrderCheckoutPage'
 import { OrderConfirmationPage } from './components/pages/checkout/OrderConfirmationPage'
+import { CartPage } from './components/pages/cart/CartPage'
 // Importar los proveedores
 import { AuthProvider } from './contexts/AuthProvider'
 import { CartProvider } from './contexts/CartProvider'
@@ -59,8 +61,6 @@ function App() {
         <Route path="/perfil" element={<ProfilePage />}>
           <Route index element={<ProfileDetail />} />
           <Route path="favoritos" element={<Favorites />} />
-          <Route path="pedidos" element={<Orders />} />
-          <Route path="pedidos/:orderId" element={<OrderDetail />} />
           <Route path="configuracion" element={<UserSettings />} />
         </Route>
         
@@ -68,9 +68,15 @@ function App() {
         <Route path="/admin/productos/nuevo" element={<AdminProductForm />} />
         <Route path="/admin/codigos-descuento" element={<DiscountCodesPage />} />
         
-        {/* Rutas de checkout */}
+        {/* Rutas de carrito y checkout */}
+        <Route path="/carrito" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/checkout/finalizar" element={<OrderCheckoutPage />} />
         <Route path="/pedido-confirmado/:orderId" element={<OrderConfirmationPage />} />
+        
+        {/* Rutas de pedidos */}
+        <Route path="/orders" element={<Orders />} />
+        <Route path="/orders/:orderId" element={<OrderDetail />} />
         
         <Route path="*" element={
           <div className="flex flex-col items-center justify-center min-h-screen bg-brown-100">

@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Coffee, LogIn } from 'lucide-react';
 import { Navbar } from '../../shared/navigation/Navbar';
 import { Footer } from '../../shared/navigation/Footer';
+import { BackButton } from '../../shared/ui/BackButton';
 import { useAuth } from '../../../hooks/useAuth';
 
 export function LoginPage() {
@@ -94,6 +95,9 @@ export function LoginPage() {
       
       <main className="flex-grow flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
+          <div className="flex justify-start mb-4">
+            <BackButton className="text-brown-600 hover:text-brown-800" toPath="/" label="Volver al inicio" />
+          </div>
           <div className="text-center">
             <div className="mx-auto h-12 w-12 flex items-center justify-center rounded-full bg-green-100">
               <Coffee className="h-8 w-8 text-green-600" />

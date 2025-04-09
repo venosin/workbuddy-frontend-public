@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "../../shared/navigation/Navbar";
 import { Footer } from "../../shared/navigation/Footer";
+import { BackButton } from "../../shared/ui/BackButton";
 import { userSettingsService } from "../../../services/userSettingsService";
 import { Toggle } from "../../shared/ui/Toggle";
 import { useAuth } from "../../../hooks/useAuth";
@@ -93,6 +94,9 @@ export function CookieSettingsPage() {
     <div className="flex flex-col min-h-screen bg-brown-50">
       <Navbar />
       <main className="flex-grow container mx-auto px-4 py-8 max-w-4xl">
+        <div className="mb-4">
+          <BackButton className="text-brown-600 hover:text-brown-800" />
+        </div>
         <h1 className="text-3xl font-bold text-brown-900 mb-6 text-center">Configuración de Cookies</h1>
         
         {statusMessage && (
