@@ -1,12 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { CreditCard, Truck, ShoppingBag, ArrowLeft } from 'lucide-react';
+import { CreditCard, Truck, ShoppingBag, ArrowLeft, PlusCircle, MapPin, Home } from 'lucide-react';
 import { useCart } from '../../../hooks/useCart';
 import { useAuth } from '../../../hooks/useAuth';
 import { Navbar } from '../../shared/navigation/Navbar';
 import { Footer } from '../../shared/navigation/Footer';
 import { BackButton } from '../../shared/ui/BackButton';
 import orderService from '../../../services/orderService';
+import { userSettingsService } from '../../../services/userSettingsService';
 
 export function OrderCheckoutPage() {
   const navigate = useNavigate();
@@ -21,9 +22,25 @@ export function OrderCheckoutPage() {
     cartId 
   } = useCart();
   
+  // Estado para los datos del formulario
   const [formData, setFormData] = useState({
     shippingAdress: user?.address || '',
     payMethod: 'tarjeta'
+  });
+  
+  // Estados para direcciones
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [selectedAddressId, setSelectedAddressId] = useState(null);
+  const [loadingAddresses, setLoadingAddresses] = useState(false);
+  const [showNewAddressForm, setShowNewAddressForm] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+  const [addressSaved, setAddressSaved] = useState(false);
+  const [newAddressData, setNewAddressData] = useState({
+    title: '',
+    street: '',
+    city: '',
+    state: '',
+    postalCode: ''
   });
   
   const [errors, setErrors] = useState({});
@@ -32,17 +49,196 @@ export function OrderCheckoutPage() {
   const [orderSuccess, setOrderSuccess] = useState(false);
   const [orderId, setOrderId] = useState(null);
   
+  // Actualizar formulario con dirección seleccionada - useCallback para evitar recrearse en cada render
+  const updateFormWithAddress = useCallback((address) => {
+    if (!address) return;
+    
+    // Formatear la dirección para el campo shippingAdress
+    const formattedAddress = `${address.street}, ${address.city}, ${address.state}, ${address.postalCode}`;
+    
+    setFormData(prev => ({
+      ...prev,
+      shippingAdress: formattedAddress
+    }));
+  }, [setFormData]);
+  
+  // Cargar direcciones guardadas del usuario - useCallback para evitar recrearse en cada render
+  const loadUserAddresses = useCallback(async () => {
+    if (!isAuthenticated) return;
+    
+    setLoadingAddresses(true);
+    setOrderError('');
+    
+    try {
+      console.log('Intentando cargar direcciones del usuario...');
+      
+      // Obtener directamente las direcciones usando el endpoint específico
+      const response = await userSettingsService.getAddresses();
+      console.log('Respuesta de getAddresses:', response);
+      
+      // Verificar si tenemos direcciones en la respuesta
+      if (response && response.addresses && response.addresses.length > 0) {
+        console.log('Direcciones encontradas:', response.addresses);
+        setSavedAddresses(response.addresses);
+        
+        // Buscar dirección por defecto
+        const defaultAddress = response.addresses.find(addr => addr.isDefault);
+        console.log('¿Se encontró dirección por defecto?', defaultAddress ? 'Sí' : 'No');
+        
+        if (defaultAddress) {
+          setSelectedAddressId(defaultAddress._id);
+          // Actualizar el formulario con la dirección seleccionada
+          updateFormWithAddress(defaultAddress);
+        } else {
+          // Si no hay dirección por defecto, seleccionar la primera
+          setSelectedAddressId(response.addresses[0]._id);
+          updateFormWithAddress(response.addresses[0]);
+        }
+      } else {
+        // No hay direcciones guardadas, intentar obtener toda la configuración
+        console.log('No se encontraron direcciones en la respuesta directa, intentando obtener configuración completa...');
+        
+        const settings = await userSettingsService.getUserSettings();
+        console.log('Configuración completa del usuario:', settings);
+        
+        // Verificar si hay direcciones en la configuración general
+        if (settings && settings.addresses && settings.addresses.length > 0) {
+          console.log('Direcciones encontradas en configuración completa:', settings.addresses);
+          setSavedAddresses(settings.addresses);
+          
+          // Seleccionar la primera dirección
+          setSelectedAddressId(settings.addresses[0]._id);
+          updateFormWithAddress(settings.addresses[0]);
+        } else {
+          // Definitivamente no hay direcciones guardadas
+          console.log('No se encontraron direcciones en ninguna parte');
+          setShowNewAddressForm(true);
+          
+          // Mostrar mensaje informativo
+          setOrderError('No se encontraron direcciones guardadas. Por favor, agrega una nueva dirección.');
+        }
+      }
+    } catch (error) {
+      console.error('Error al cargar direcciones:', error);
+      setOrderError('Error al cargar tus direcciones guardadas. Puedes agregar una nueva dirección.');
+    } finally {
+      setLoadingAddresses(false);
+    }
+  }, [isAuthenticated, setSelectedAddressId, setSavedAddresses, setShowNewAddressForm, setLoadingAddresses, updateFormWithAddress, setOrderError]);
+  
+  // Manejar selección de dirección
+  const handleAddressSelect = (addressId) => {
+    setSelectedAddressId(addressId);
+    const selectedAddress = savedAddresses.find(addr => addr._id === addressId);
+    if (selectedAddress) {
+      updateFormWithAddress(selectedAddress);
+      setShowNewAddressForm(false);
+    }
+  };
+  
+  // Manejar cambios en el formulario de nueva dirección
+  const handleNewAddressChange = (e) => {
+    const { name, value } = e.target;
+    setNewAddressData({
+      ...newAddressData,
+      [name]: value
+    });
+  };
+  
+  // Guardar nueva dirección
+  const handleSaveNewAddress = async () => {
+    // Validar campos
+    const newErrors = {};
+    for (const field of ['title', 'street', 'city', 'state', 'postalCode']) {
+      if (!newAddressData[field].trim()) {
+        newErrors[`new_${field}`] = `El campo ${field} es obligatorio`;
+      }
+    }
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors({ ...errors, ...newErrors });
+      return;
+    }
+    
+    // Indicar que estamos guardando
+    setSavingAddress(true);
+    setOrderError(''); // Limpiar cualquier error previo
+    
+    try {
+      console.log('Guardando nueva dirección:', newAddressData);
+      const response = await userSettingsService.addAddress(newAddressData);
+      console.log('Respuesta al guardar dirección:', response);
+      
+      // Mostrar mensaje de éxito independientemente del formato exacto de la respuesta
+      setAddressSaved(true);
+      
+      // Detectamos si la respuesta tiene el formato esperado
+      if (response.success && response.address) {
+        // Formato esperado: {success: true, address: {...}}
+        // Agregar la nueva dirección a la lista y seleccionarla
+        setSavedAddresses([...savedAddresses, response.address]);
+        setSelectedAddressId(response.address._id);
+        updateFormWithAddress(response.address);
+      } else if (response.address) {
+        // Formato alternativo: {address: {...}}
+        setSavedAddresses([...savedAddresses, response.address]);
+        setSelectedAddressId(response.address._id);
+        updateFormWithAddress(response.address);
+      } else {
+        // La dirección se guardó pero no tenemos los detalles
+        // Recargar todas las direcciones para obtener la más reciente
+        console.log('La dirección se guardó pero no tenemos los detalles, recargando direcciones...');
+        await loadUserAddresses();
+      }
+      
+      // Limpiar formulario
+      setNewAddressData({
+        title: '',
+        street: '',
+        city: '',
+        state: '',
+        postalCode: ''
+      });
+      
+      // Cerrar el formulario después de un breve retraso
+      setTimeout(() => {
+        setShowNewAddressForm(false);
+        setAddressSaved(false);
+      }, 1500);
+    } catch (error) {
+      console.error('Error al guardar dirección:', error);
+      setOrderError('Error al guardar la dirección. Inténtalo de nuevo.');
+      setErrors({
+        ...errors,
+        newAddress: 'Error al guardar la dirección. Intenta nuevamente.'
+      });
+    } finally {
+      // Garantizamos que el estado de guardado siempre se desactive
+      setSavingAddress(false);
+      
+      // Añadimos un respaldo en caso de que finally no se ejecute por alguna razón
+      setTimeout(() => {
+        setSavingAddress(false);
+      }, 3000);
+    }
+  };
+
   useEffect(() => {
     // Si el usuario no está autenticado, redirigir a login
     if (!isAuthenticated) {
       navigate('/iniciar-sesion?redirect=checkout');
+      return;
     }
     
     // Si no hay productos en el carrito, redirigir a la tienda
     if (items.length === 0 && !cartLoading) {
       navigate('/carrito');
+      return;
     }
-  }, [isAuthenticated, items.length, cartLoading, navigate]);
+    
+    // Cargar direcciones del usuario
+    loadUserAddresses();
+  }, [isAuthenticated, items.length, cartLoading, navigate, loadUserAddresses]);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -184,22 +380,249 @@ export function OrderCheckoutPage() {
               <h2 className="text-xl font-semibold mb-4">Información de envío</h2>
               
               <form onSubmit={handleSubmit}>
-                {/* Dirección de envío */}
+                {/* Sección de direcciones de envío */}
                 <div className="mb-4">
-                  <label htmlFor="shippingAdress" className="block text-sm font-medium text-gray-700 mb-1">
-                    Dirección de envío
-                  </label>
-                  <textarea
-                    id="shippingAdress"
-                    name="shippingAdress"
-                    value={formData.shippingAdress}
-                    onChange={handleInputChange}
-                    className={`w-full p-3 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
-                      errors.shippingAdress ? 'border-red-300' : 'border-gray-300'
-                    }`}
-                    rows={3}
-                    placeholder="Calle, número, colonia, ciudad, estado, código postal"
-                  ></textarea>
+                  <div className="flex justify-between items-center mb-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Dirección de envío
+                    </label>
+                    
+                    {/* Botón para mostrar/ocultar form de nueva dirección */}
+                    <button 
+                      type="button"
+                      onClick={() => setShowNewAddressForm(!showNewAddressForm)}
+                      className="text-sm flex items-center text-green-600 hover:text-green-800"
+                    >
+                      {showNewAddressForm ? (
+                        <>
+                          <ArrowLeft className="h-4 w-4 mr-1" />
+                          Volver a mis direcciones
+                        </>
+                      ) : (
+                        <>
+                          <PlusCircle className="h-4 w-4 mr-1" />
+                          Agregar nueva dirección
+                        </>
+                      )}
+                    </button>
+                  </div>
+                  
+                  {/* Indicador de carga mientras se cargan las direcciones */}
+                  {loadingAddresses && (
+                    <div className="flex justify-center items-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-green-500"></div>
+                      <span className="ml-2 text-sm text-gray-600">Cargando tus direcciones...</span>
+                    </div>
+                  )}
+
+                  {/* Mostrar direcciones guardadas si hay disponibles y no estamos en modo de nueva dirección */}
+                  {!showNewAddressForm && !loadingAddresses && savedAddresses.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-3 mb-3">
+                      {savedAddresses.map((address) => (
+                        <label
+                          key={address._id}
+                          className={`relative p-4 border rounded-lg flex items-start cursor-pointer hover:border-green-500 ${
+                            selectedAddressId === address._id 
+                              ? 'border-green-500 bg-green-50' 
+                              : 'border-gray-300'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="addressId"
+                            value={address._id}
+                            checked={selectedAddressId === address._id}
+                            onChange={() => handleAddressSelect(address._id)}
+                            className="sr-only"
+                          />
+                          <div className="flex-shrink-0 mr-3 mt-1">
+                            {address.title.toLowerCase().includes('casa') ? (
+                              <Home className="h-5 w-5 text-green-500" />
+                            ) : (
+                              <MapPin className="h-5 w-5 text-green-500" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-sm font-medium text-gray-900">{address.title}</h3>
+                            <p className="mt-1 text-sm text-gray-600">
+                              {address.street}, {address.city}, {address.state} {address.postalCode}
+                            </p>
+                            {address.isDefault && (
+                              <span className="mt-1 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Predeterminada
+                              </span>
+                            )}
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  ) : null}
+                  
+                  {/* Formulario para nueva dirección */}
+                  {showNewAddressForm ? (
+                    <div className="border rounded-lg p-4 bg-gray-50">
+                      {/* Mensaje de confirmación cuando se guarda la dirección */}
+                      {addressSaved && (
+                        <div className="mb-4 p-3 rounded-md bg-green-100 border border-green-300 text-green-700 flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span>¡Dirección guardada correctamente!</span>
+                        </div>
+                      )}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                            Título de la dirección
+                          </label>
+                          <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            value={newAddressData.title}
+                            onChange={handleNewAddressChange}
+                            disabled={savingAddress}
+                            className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                              errors.new_title ? 'border-red-300' : 'border-gray-300'
+                            } ${savingAddress ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            placeholder="Ej. Mi casa, Trabajo, etc."
+                          />
+                          {errors.new_title && (
+                            <p className="mt-1 text-xs text-red-600">{errors.new_title}</p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="street" className="block text-sm font-medium text-gray-700 mb-1">
+                            Calle y número
+                          </label>
+                          <input
+                            type="text"
+                            id="street"
+                            name="street"
+                            value={newAddressData.street}
+                            onChange={handleNewAddressChange}
+                            disabled={savingAddress}
+                            className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                              errors.new_street ? 'border-red-300' : 'border-gray-300'
+                            } ${savingAddress ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            placeholder="Ej. Calle Principal #123"
+                          />
+                          {errors.new_street && (
+                            <p className="mt-1 text-xs text-red-600">{errors.new_street}</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                          <label htmlFor="city" className="block text-sm font-medium text-gray-700 mb-1">
+                            Ciudad
+                          </label>
+                          <input
+                            type="text"
+                            id="city"
+                            name="city"
+                            value={newAddressData.city}
+                            onChange={handleNewAddressChange}
+                            disabled={savingAddress}
+                            className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                              errors.new_city ? 'border-red-300' : 'border-gray-300'
+                            } ${savingAddress ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            placeholder="Ej. San Salvador"
+                          />
+                          {errors.new_city && (
+                            <p className="mt-1 text-xs text-red-600">{errors.new_city}</p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="state" className="block text-sm font-medium text-gray-700 mb-1">
+                            Estado/Departamento
+                          </label>
+                          <input
+                            type="text"
+                            id="state"
+                            name="state"
+                            value={newAddressData.state}
+                            onChange={handleNewAddressChange}
+                            className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                              errors.new_state ? 'border-red-300' : 'border-gray-300'
+                            }`}
+                            placeholder="Ej. Nejapa"
+                          />
+                          {errors.new_state && (
+                            <p className="mt-1 text-xs text-red-600">{errors.new_state}</p>
+                          )}
+                        </div>
+                        
+                        <div>
+                          <label htmlFor="postalCode" className="block text-sm font-medium text-gray-700 mb-1">
+                            Código Postal
+                          </label>
+                          <input
+                            type="text"
+                            id="postalCode"
+                            name="postalCode"
+                            value={newAddressData.postalCode}
+                            onChange={handleNewAddressChange}
+                            disabled={savingAddress}
+                            className={`w-full p-2 border rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 ${
+                              errors.new_postalCode ? 'border-red-300' : 'border-gray-300'
+                            } ${savingAddress ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                            placeholder="Ej. 00106"
+                          />
+                          {errors.new_postalCode && (
+                            <p className="mt-1 text-xs text-red-600">{errors.new_postalCode}</p>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <button
+                        type="button"
+                        onClick={handleSaveNewAddress}
+                        disabled={savingAddress}
+                        className={`w-full mt-2 ${savingAddress ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'} text-white py-2 px-4 rounded-md transition duration-200 ease-in-out flex justify-center items-center`}
+                      >
+                        {savingAddress ? (
+                          <>
+                            <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Guardando...
+                          </>
+                        ) : (
+                          'Guardar dirección'
+                        )}
+                      </button>
+                      
+                      {errors.newAddress && (
+                        <p className="mt-2 text-sm text-red-600">{errors.newAddress}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      {/* Campo de dirección oculto para mantener compatibilidad con código existente */}
+                      <input
+                        type="hidden"
+                        id="shippingAdress"
+                        name="shippingAdress"
+                        value={formData.shippingAdress}
+                      />
+                      
+                      {/* Mostrar la dirección seleccionada en un textarea (solo lectura) */}
+                      {savedAddresses.length > 0 && selectedAddressId && (
+                        <textarea
+                          readOnly
+                          className="w-full p-3 border rounded-md bg-gray-50 text-gray-700 border-gray-300"
+                          rows={2}
+                          value={formData.shippingAdress}
+                        ></textarea>
+                      )}
+                    </>
+                  )}
+                  
                   {errors.shippingAdress && (
                     <p className="mt-1 text-sm text-red-600">{errors.shippingAdress}</p>
                   )}

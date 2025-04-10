@@ -54,17 +54,14 @@ export function VerifyCodePage() {
       // Llamar al servicio para verificar el código
       const response = await authService.verifyEmailCode(verificationCode);
       
-      console.log('Verificación exitosa:', response);
+      console.log('Verificación exitosa (login automático):', response);
       
-      setSuccess('¡Verificación exitosa! Redirigiendo...');
+      setSuccess('¡Verificación exitosa! Has iniciado sesión automáticamente. Redirigiendo...');
       
       // Esperar 2 segundos antes de redirigir para mostrar el mensaje de éxito
       setTimeout(() => {
-        navigate('/iniciar-sesion', { 
-          state: { 
-            message: '¡Tu cuenta ha sido verificada! Ahora puedes iniciar sesión.' 
-          } 
-        });
+        // Como ahora el login es automático, redirigimos al dashboard en lugar de la página de login
+        navigate('/dashboard');
       }, 2000);
     } catch (error) {
       console.error('Error de verificación:', error);

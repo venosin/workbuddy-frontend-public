@@ -74,6 +74,27 @@ const authService = {
   verifyEmailCode: async (verificationCode) => {
     try {
       const response = await axios.post(`${API_URL}/wb/registerClient/verifyCodeEmail`, { verificationCode });
+      
+      // Si la verificación es exitosa y recibimos un token, guardar información para autenticación automática
+      if (response.data.token) {
+        // Guardar el token en localStorage
+        localStorage.setItem('token', response.data.token);
+        
+        // Guardar el ID del cliente
+        if (response.data.client && response.data.client.id) {
+          localStorage.setItem('userId', response.data.client.id);
+        }
+        
+        // Guardar el tipo de usuario (siempre será "client" para este endpoint)
+        localStorage.setItem('userType', 'client');
+        
+        console.log('Login automático después de verificación:', {
+          token: 'TOKEN-GUARDADO',
+          userId: response.data.client?.id,
+          userType: 'client'
+        });
+      }
+      
       return response.data;
     } catch (error) {
       throw error.response ? error.response.data : new Error('Error en el servidor');

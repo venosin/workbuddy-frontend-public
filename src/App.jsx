@@ -25,7 +25,6 @@ import { UserSettings } from './components/pages/profile/UserSettings'
 import { AdminProductForm } from './components/pages/admin/AdminProductForm'
 import { DiscountCodesPage } from './components/pages/admin/DiscountCodesPage'
 // Componentes de checkout
-import { CheckoutPage } from './components/pages/checkout/CheckoutPage'
 import { OrderCheckoutPage } from './components/pages/checkout/OrderCheckoutPage'
 import { OrderConfirmationPage } from './components/pages/checkout/OrderConfirmationPage'
 import { CartPage } from './components/pages/cart/CartPage'
@@ -76,7 +75,6 @@ function App() {
         
         {/* Rutas de carrito y checkout */}
         <Route path="/carrito" element={<CartPage />} />
-        <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/checkout/finalizar" element={<OrderCheckoutPage />} />
         <Route path="/pedido-confirmado/:orderId" element={<OrderConfirmationPage />} />
         
