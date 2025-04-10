@@ -191,7 +191,7 @@ export function OrderDetail() {
                     <div key={index} className="flex items-center">
                       <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-md border border-gray-200">
                         <img
-                          src={product.image?.url || 'https://via.placeholder.com/300x200?text=No+imagen'}
+                          src={product.image?.url || '/tiendaEjem.jpeg'}
                           alt={product.name}
                           className="h-full w-full object-cover object-center"
                         />

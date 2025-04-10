@@ -1,4 +1,5 @@
 import axios from 'axios';
+import api from './api';
 
 // Configura la URL base
 const API_URL = 'http://localhost:4000';
@@ -56,6 +57,73 @@ const profileService = {
     }
     
     return formData;
+  },
+
+  // ------ Métodos relacionados con órdenes ------
+
+  // Obtener las órdenes del usuario con opciones de filtrado y paginación
+  getUserOrders: async (filters = {}) => {
+    try {
+      // Construir parámetros de consulta
+      const params = new URLSearchParams();
+      
+      // Añadir filtros si están presentes
+      if (filters.status) params.append('status', filters.status);
+      if (filters.startDate) params.append('startDate', filters.startDate);
+      if (filters.endDate) params.append('endDate', filters.endDate);
+      if (filters.limit) params.append('limit', filters.limit);
+      if (filters.page) params.append('page', filters.page);
+
+      const response = await api.get(`/wb/profile/orders?${params}`);
+      return response.data;
+    } catch (error) {
+      console.error('Error obteniendo órdenes del usuario:', error);
+      throw error.response ? error.response.data : new Error('Error al obtener órdenes');
+    }
+  },
+
+  // Obtener una orden específica por su ID
+  getOrderById: async (orderId) => {
+    try {
+      const response = await api.get(`/wb/orders/${orderId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error obteniendo orden ${orderId}:`, error);
+      throw error.response ? error.response.data : new Error('Error al obtener la orden');
+    }
+  },
+
+  // Crear una nueva orden
+  createOrder: async (orderData) => {
+    try {
+      const response = await api.post('/wb/orders', orderData);
+      return response.data;
+    } catch (error) {
+      console.error('Error creando orden:', error);
+      throw error.response ? error.response.data : new Error('Error al crear la orden');
+    }
+  },
+
+  // Actualizar el estado de una orden
+  updateOrderStatus: async (orderId, status) => {
+    try {
+      const response = await api.put(`/wb/orders/${orderId}`, { status });
+      return response.data;
+    } catch (error) {
+      console.error(`Error actualizando estado de orden ${orderId}:`, error);
+      throw error.response ? error.response.data : new Error('Error al actualizar estado de la orden');
+    }
+  },
+
+  // Cancelar una orden (solo disponible para órdenes pendientes)
+  cancelOrder: async (orderId) => {
+    try {
+      const response = await api.delete(`/wb/orders/${orderId}`);
+      return response.data;
+    } catch (error) {
+      console.error(`Error cancelando orden ${orderId}:`, error);
+      throw error.response ? error.response.data : new Error('Error al cancelar la orden');
+    }
   }
 };
 

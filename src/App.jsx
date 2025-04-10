@@ -1,5 +1,5 @@
 import './index.css'
-import { Routes, Route, BrowserRouter } from 'react-router-dom'
+import { Routes, Route } from 'react-router-dom'
 import { HomePage } from './components/pages/home/HomePage'
 import { TiendaPage } from './components/pages/tienda/TiendaPage'
 import { ProductDetail } from './components/pages/tienda/ProductDetail'
@@ -29,6 +29,12 @@ import { CheckoutPage } from './components/pages/checkout/CheckoutPage'
 import { OrderCheckoutPage } from './components/pages/checkout/OrderCheckoutPage'
 import { OrderConfirmationPage } from './components/pages/checkout/OrderConfirmationPage'
 import { CartPage } from './components/pages/cart/CartPage'
+
+// Componentes de pago con PayPal
+import PaymentPage from './components/pages/checkout/PaymentPage'
+import PaymentSuccessPage from './components/pages/checkout/PaymentSuccessPage'
+import PaymentCancelPage from './components/pages/checkout/PaymentCancelPage'
+import { CheckoutPaypalPage } from './components/pages/checkout/CheckoutPaypalPage'
 // Importar los proveedores
 import { AuthProvider } from './contexts/AuthProvider'
 import { CartProvider } from './contexts/CartProvider'
@@ -39,7 +45,6 @@ function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <BrowserRouter>
         <CookieBanner />
         <Routes>
         <Route path="/" element={<HomePage />} />
@@ -61,6 +66,7 @@ function App() {
         <Route path="/perfil" element={<ProfilePage />}>
           <Route index element={<ProfileDetail />} />
           <Route path="favoritos" element={<Favorites />} />
+          <Route path="pedidos" element={<Orders />} />
           <Route path="configuracion" element={<UserSettings />} />
         </Route>
         
@@ -73,6 +79,12 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/checkout/finalizar" element={<OrderCheckoutPage />} />
         <Route path="/pedido-confirmado/:orderId" element={<OrderConfirmationPage />} />
+        
+        {/* Rutas de pago con PayPal */}
+        <Route path="/checkout-paypal" element={<CheckoutPaypalPage />} />
+        <Route path="/checkout/payment/:orderId" element={<PaymentPage />} />
+        <Route path="/checkout/success" element={<PaymentSuccessPage />} />
+        <Route path="/checkout/cancel" element={<PaymentCancelPage />} />
         
         {/* Rutas de pedidos */}
         <Route path="/orders" element={<Orders />} />
@@ -87,8 +99,7 @@ function App() {
             </a>
           </div>
         } />
-      </Routes>
-      </BrowserRouter>
+        </Routes>
       </CartProvider>
     </AuthProvider>
   )

@@ -73,7 +73,7 @@ export function HeroSection() {
           <div className="md:w-1/2 relative opacity-0 animate-fade-in" style={{animationDelay: '0.3s', animationFillMode: 'forwards'}}>
             <div className="relative rounded-lg overflow-hidden">
               <img
-                src="/placeholder.svg"
+                src="/tiendaEjem.jpeg"
                 alt="Espacio de trabajo ergonómico"
                 className="w-full h-auto rounded-lg"
                 style={{ maxHeight: '400px', width: '600px' }}

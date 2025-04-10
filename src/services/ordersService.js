@@ -66,6 +66,68 @@ const ordersService = {
       console.error('Error al eliminar la orden:', error);
       throw error.response ? error.response.data : new Error('Error al eliminar la orden');
     }
+  },
+  
+  // Obtener conteo de pedidos por estado
+  getOrdersCountByStatus: async () => {
+    try {
+      // Usar el endpoint existente /wb/orders/user que sí está implementado en el backend
+      // Este endpoint devuelve todas las órdenes del usuario
+      const response = await api.get('/wb/orders/user?limit=100');
+      
+      if (!response.data || !response.data.orders) {
+        return {
+          pending: 0,
+          processing: 0,
+          completed: 0,
+          cancelled: 0,
+          total: 0
+        };
+      }
+      
+      // Calcular conteo por estado manualmente
+      const orders = response.data.orders;
+      const counts = {
+        pending: 0,
+        processing: 0,
+        completed: 0, // Incluye 'delivered'
+        cancelled: 0,
+        total: orders.length
+      };
+      
+      // Contar cada orden según su estado
+      orders.forEach(order => {
+        switch(order.status) {
+          case 'pending':
+          case 'paid':
+            counts.pending++;
+            break;
+          case 'processing':
+          case 'shipped':
+            counts.processing++;
+            break;
+          case 'delivered':
+            counts.completed++;
+            break;
+          case 'cancelled':
+            counts.cancelled++;
+            break;
+        }
+      });
+      
+      return counts;
+    } catch (error) {
+      console.warn('No se pudo obtener el conteo de pedidos:', error.message || 'Error desconocido');
+      
+      // Devolver valores por defecto para que la UI no se rompa
+      return {
+        pending: 0,
+        processing: 0,
+        completed: 0,
+        cancelled: 0,
+        total: 0
+      };
+    }
   }
 };
 

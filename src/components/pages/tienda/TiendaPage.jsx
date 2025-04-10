@@ -22,7 +22,7 @@ export function TiendaPage() {
       price: 599.99,
       stock: 10,
       imagery: {
-        url: 'https://via.placeholder.com/300',
+        url: '/tiendaEjem.jpeg',
         public_id: 'sample_1',
         filename: 'computadora.jpg'
       }
@@ -35,7 +35,7 @@ export function TiendaPage() {
       price: 899.99,
       stock: 5,
       imagery: {
-        url: 'https://via.placeholder.com/300',
+        url: '/tiendaEjem.jpeg',
         public_id: 'sample_2',
         filename: 'laptop.jpg'
       }
@@ -48,7 +48,7 @@ export function TiendaPage() {
       price: 29.99,
       stock: 50,
       imagery: {
-        url: 'https://via.placeholder.com/300',
+        url: '/tiendaEjem.jpeg',
         public_id: 'sample_3',
         filename: 'boligrafos.jpg'
       }
@@ -61,7 +61,7 @@ export function TiendaPage() {
       price: 249.99,
       stock: 8,
       imagery: {
-        url: 'https://via.placeholder.com/300',
+        url: '/tiendaEjem.jpeg',
         public_id: 'sample_4',
         filename: 'silla.jpg'
       }
@@ -74,7 +74,7 @@ export function TiendaPage() {
       price: 349.99,
       stock: 12,
       imagery: {
-        url: 'https://via.placeholder.com/300',
+        url: '/tiendaEjem.jpeg',
         public_id: 'sample_5',
         filename: 'monitor.jpg'
       }
@@ -87,7 +87,7 @@ export function TiendaPage() {
       price: 39.99,
       stock: 20,
       imagery: {
-        url: 'https://via.placeholder.com/300',
+        url: '/tiendaEjem.jpeg',
         public_id: 'sample_6',
         filename: 'cuadernos.jpg'
       }

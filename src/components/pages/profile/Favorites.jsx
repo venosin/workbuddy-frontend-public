@@ -99,8 +99,12 @@ export function Favorites() {
             <div className="relative">
               {/* Imagen del producto */}
               <img 
-                src={product.image?.url || 'https://via.placeholder.com/300x200?text=Sin+imagen'} 
+                src={product.imagery?.url || product.image || '/images/product-placeholder.png'} 
                 alt={product.name} 
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='200' viewBox='0 0 300 200'%3E%3Crect width='300' height='200' fill='%23f3f4f6'/%3E%3Ctext x='150' y='100' font-family='Arial' font-size='18' fill='%23777777' text-anchor='middle'%3ESin imagen%3C/text%3E%3C/svg%3E";
+                }}
                 className="w-full h-48 object-cover"
               />
               

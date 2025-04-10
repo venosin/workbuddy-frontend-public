@@ -19,7 +19,7 @@ export function ProductCard({ product }) {
   const imageUrl = 
     product.imagery?.url || 
     product.image || 
-    "https://via.placeholder.com/300";
+    "/tiendaEjem.jpeg";
   
   // Valores por defecto para evitar errores
   const stock = product.stock === undefined ? 10 : product.stock;
@@ -109,7 +109,7 @@ export function ProductCard({ product }) {
             className="w-full h-full object-cover" 
             onError={(e) => {
               e.target.onerror = null;
-              e.target.src = 'https://via.placeholder.com/300';
+              e.target.src = '/tiendaEjem.jpeg';
             }}
           />
           <button 

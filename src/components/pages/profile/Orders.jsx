@@ -22,7 +22,17 @@ export function Orders() {
       setError('');
       const data = await ordersService.getUserOrders();
       console.log('Órdenes cargadas:', data);
-      setOrders(data);
+      
+      // Verificar si la respuesta tiene la estructura esperada y extraer el array de órdenes
+      if (data && data.orders && Array.isArray(data.orders)) {
+        setOrders(data.orders);
+      } else if (Array.isArray(data)) {
+        // Por si la API devuelve directamente un array en lugar de un objeto paginado
+        setOrders(data);
+      } else {
+        console.error('Formato de respuesta inesperado:', data);
+        throw new Error('La respuesta del servidor no tiene el formato esperado');
+      }
     } catch (err) {
       console.error('Error al cargar pedidos:', err);
       setError('No se pudieron cargar los pedidos. Por favor, intenta de nuevo.');
