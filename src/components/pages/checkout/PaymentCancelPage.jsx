@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { FaTimesCircle, FaShoppingCart, FaCreditCard } from 'react-icons/fa';
 import paymentService from '../../../services/paymentService';
+import notificationService from '../../../services/notificationService';
 
 /**
  * Página que se muestra cuando un usuario cancela un pago
@@ -35,6 +36,12 @@ const PaymentCancelPage = () => {
       // Registrar la cancelación en el sistema
       await paymentService.cancelPayment(id);
       setIsCancelled(true);
+      
+      // Mostrar notificación de pago cancelado
+      notificationService.warning(
+        `Has cancelado el proceso de pago para la orden #${id}. Puedes intentarlo nuevamente cuando lo desees.`,
+        'Pago Cancelado'
+      );
     } catch (error) {
       console.error('Error al procesar la cancelación del pago:', error);
       setError('No se pudo procesar la cancelación. El estado de su orden podría no ser exacto.');
@@ -46,9 +53,11 @@ const PaymentCancelPage = () => {
   // Retomar el proceso de pago
   const handleRetryPayment = () => {
     if (orderId) {
+      // Mostrar notificación de reintento
+      notificationService.info('Reiniciando el proceso de pago...', 'Reintento de pago');
       navigate(`/checkout/payment/${orderId}`);
     } else {
-      navigate('/cart');
+      navigate('/carrito');
     }
   };
 

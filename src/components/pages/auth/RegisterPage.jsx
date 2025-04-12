@@ -177,11 +177,11 @@ export function RegisterPage() {
       
       console.log('Registro y login exitosos');
       
-      // Redirigir a la página de verificación de código, pero ya logueado
-      navigate('/verificar-codigo', { 
+      // Redirigir a la página principal en lugar de la verificación
+      navigate('/', { 
         state: { 
           email: formData.email,
-          message: '¡Usuario registrado con éxito! Tu cuenta ya está activa, pero por seguridad, por favor verifica tu correo con el código que te hemos enviado.'
+          message: '¡Usuario registrado con éxito! Tu cuenta ya está activa.'
         } 
       });
     } catch (error) {

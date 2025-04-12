@@ -42,7 +42,7 @@ const cartService = {
           : cart.clienteId;
         
         // Incluir carritos con estado 'active' o 'pending'
-        return cartClientId === userId && (cart.state === 'active' || cart.state === 'pending');
+        return cartClientId === userId && (cart.state === 'active' || cart.state === 'pending' || !cart.state);
       });
       
       if (userCarts.length > 0) {
@@ -82,7 +82,7 @@ const cartService = {
       };
       
       const newCart = {
-        clienteId: userId,
+        clientId: userId,  // Cambiado de clienteId a clientId (sin la 'e')
         products: [],
         discountCodesId: null,
         total: 0,

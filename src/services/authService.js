@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { normalizeUserType } from '../utils/userTypeUtils';
 
 // Configura la URL base - ajustado para tu backend
 const API_URL = 'http://localhost:4000';
@@ -23,7 +24,7 @@ const authService = {
         const messageUserType = response.data.message?.split(' ')?.[0] || '';
         
         // Guardar el tipo de usuario para verificaciones locales
-        const userType = response.data.userType || messageUserType || 'client';
+        const userType = normalizeUserType(response.data.userType || messageUserType || 'clients');
         const userId = response.data.userId || response.data.user?._id || '';
         
         localStorage.setItem('userType', userType);
@@ -86,12 +87,12 @@ const authService = {
         }
         
         // Guardar el tipo de usuario (siempre será "client" para este endpoint)
-        localStorage.setItem('userType', 'client');
+        localStorage.setItem('userType', 'clients');
         
         console.log('Login automático después de verificación:', {
           token: 'TOKEN-GUARDADO',
           userId: response.data.client?.id,
-          userType: 'client'
+          userType: 'clients'
         });
       }
       

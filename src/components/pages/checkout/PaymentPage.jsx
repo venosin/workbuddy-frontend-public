@@ -3,6 +3,7 @@ import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { PayPalButtons } from '@paypal/react-paypal-js';
 import orderService from '../../../services/orderService';
 import paymentService from '../../../services/paymentService';
+import notificationService from '../../../services/notificationService';
 
 /**
  * Página de pago que integra PayPal para procesar pagos de órdenes
@@ -27,20 +28,24 @@ const PaymentPage = () => {
       
       if (result.status === 'COMPLETED') {
         setPaymentStatus('completed');
+        // Mostrar notificación de pago exitoso
+        notificationService.success(
+          `Tu pago para la orden #${orderId} ha sido procesado correctamente.`,
+          '¡Pago Completado!'
+        );
         // Redirigir a la página de éxito después de un breve delay
+        // Ya no usamos state para pasar el ID, ahora está en localStorage
         setTimeout(() => {
-          navigate('/checkout/success', { 
-            state: { 
-              orderId, 
-              paymentMethod: 'paypal',
-              status: result.status
-            } 
-          });
+          navigate('/checkout/success');
         }, 1500);
       }
     } catch (error) {
       console.error('Error al procesar el retorno de PayPal:', error);
       setError('Error al completar el pago. Por favor, contacte con soporte.');
+      notificationService.error(
+        'No pudimos procesar tu pago. Por favor, intenta nuevamente o contacta con soporte.',
+        'Error de Pago'
+      );
     } finally {
       setLoading(false);
     }
@@ -92,6 +97,11 @@ const PaymentPage = () => {
       if (paymentData.approveUrl) {
         // Guardar el ID de la orden de PayPal
         setPaypalOrderId(paymentData.id);
+        
+        // Guardar el ID de nuestra orden en localStorage para recuperarlo después de la redirección
+        localStorage.setItem('currentOrderId', orderId);
+        console.log('ID de orden guardado en localStorage:', orderId);
+        
         // Redirigir al usuario a PayPal para completar el pago
         window.location.href = paymentData.approveUrl;
       } else {
@@ -100,6 +110,10 @@ const PaymentPage = () => {
     } catch (error) {
       console.error('Error al iniciar pago con PayPal:', error);
       setError(error.message || 'Error al iniciar el pago con PayPal');
+      notificationService.error(
+        'No pudimos iniciar el proceso de pago con PayPal. Por favor, intenta nuevamente.',
+        'Error al iniciar pago'
+      );
       setLoading(false);
     }
   };
@@ -109,8 +123,15 @@ const PaymentPage = () => {
     try {
       setLoading(true);
       await paymentService.cancelPayment(orderId);
+      
+      // Mostrar notificación de cancelación
+      notificationService.warning(
+        'Has cancelado el proceso de pago. Tu orden ha sido guardada y puedes completarla más tarde.',
+        'Pago Cancelado'
+      );
+      
       // Redirigir al carrito de compras o página anterior
-      navigate('/cart');
+      navigate('/carrito');
     } catch (error) {
       console.error('Error al cancelar el pago:', error);
       setError(error.message || 'Error al cancelar el pago');

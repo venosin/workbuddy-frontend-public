@@ -1,5 +1,6 @@
 // Configuración base para axios
 import axios from 'axios';
+import { normalizeUserType } from '../../utils/userTypeUtils';
 
 // Configura la URL base de tu API aquí (ajústala según tu configuración)
 // Basado en tu configuración del backend, todas las rutas comienzan con /wb/
@@ -21,6 +22,12 @@ api.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Normalizar userType si está presente en los datos de la petición
+    if (config.data && config.data.userType) {
+      config.data.userType = normalizeUserType(config.data.userType);
+    }
+    
     return config;
   },
   (error) => {

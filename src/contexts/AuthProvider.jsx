@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import AuthContext from './AuthContext';
 import authService from '../services/authService';
+import { normalizeUserType } from '../utils/userTypeUtils';
 
 export function AuthProvider({ children }) {
   // Estado del usuario
@@ -52,7 +53,7 @@ export function AuthProvider({ children }) {
       const messageUserType = data.message?.split(' ')?.[0] || '';
       
       // Ahora usaremos el tipo de usuario y los datos básicos para construir un usuario provisional
-      const userType = data.userType || messageUserType || localStorage.getItem('userType') || 'client';
+      const userType = normalizeUserType(data.userType || messageUserType || localStorage.getItem('userType') || 'clients');
       const userId = data.userId || localStorage.getItem('userId') || 'unknown';
       
       console.log('Tipo de usuario detectado:', userType);
@@ -121,7 +122,7 @@ export function AuthProvider({ children }) {
       id: '123456789',
       name: 'Usuario Demo',
       email: 'usuario@ejemplo.com',
-      userType: 'client',
+      userType: normalizeUserType('clients'),
       avatar: 'https://ui-avatars.com/api/?name=Usuario+Demo&background=0D8ABC&color=fff',
       // Datos adicionales que podría necesitar el perfil
       phoneNumber: '123-456-7890',
@@ -130,7 +131,7 @@ export function AuthProvider({ children }) {
     };
     
     // Establecer el tipo de usuario en localStorage para simulación
-    localStorage.setItem('userType', 'client');
+    localStorage.setItem('userType', normalizeUserType('clients'));
     localStorage.setItem('userId', '123456789');
     setUser(demoUser);
     setIsAuthenticated(true);
@@ -149,7 +150,7 @@ export function AuthProvider({ children }) {
       
       // 3. Construir objeto de usuario usando los datos de registro y login
       const userId = loginData.userId || registerResponse.userId || 'unknown';
-      const userType = loginData.userType || 'client';
+      const userType = normalizeUserType(loginData.userType || 'clients');
       
       // 4. Crear un objeto de usuario inicial con los datos del registro
       const newUser = {

@@ -1,5 +1,6 @@
 import './index.css'
 import { Routes, Route } from 'react-router-dom'
+import { useEffect } from 'react'
 import { HomePage } from './components/pages/home/HomePage'
 import { TiendaPage } from './components/pages/tienda/TiendaPage'
 import { ProductDetail } from './components/pages/tienda/ProductDetail'
@@ -37,15 +38,35 @@ import { CheckoutPaypalPage } from './components/pages/checkout/CheckoutPaypalPa
 // Importar los proveedores
 import { AuthProvider } from './contexts/AuthProvider'
 import { CartProvider } from './contexts/CartProvider'
+import { NotificationProvider, useNotifications } from './contexts/NotificationContext'
 // Importar componente de cookies
 import { CookieBanner } from './components/shared/CookieBanner'
+// Importar componentes de notificaciones
+import NotificationContainer from './components/shared/notifications/NotificationContainer'
+// Importar servicio de notificaciones
+import { initNotificationService } from './services/notificationService'
+
+// Componente interno que inicializa el servicio de notificaciones
+function NotificationInitializer() {
+  const notificationContext = useNotifications();
+  
+  useEffect(() => {
+    // Inicializar el servicio de notificaciones con el contexto
+    initNotificationService(notificationContext);
+  }, [notificationContext]);
+  
+  return null;
+}
 
 function App() {
   return (
     <AuthProvider>
       <CartProvider>
-        <CookieBanner />
-        <Routes>
+        <NotificationProvider>
+          <NotificationInitializer />
+          <NotificationContainer />
+          <CookieBanner />
+          <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/tienda" element={<TiendaPage />} />
         <Route path="/productos/:id" element={<ProductDetail />} />
@@ -98,6 +119,7 @@ function App() {
           </div>
         } />
         </Routes>
+        </NotificationProvider>
       </CartProvider>
     </AuthProvider>
   )

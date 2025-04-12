@@ -12,6 +12,7 @@ const paymentService = {
   initPaymentProcess: async (orderId) => {
     try {
       const response = await api.post('/wb/payment/init-payment', { orderId });
+      console.log('Respuesta de inicialización de pago:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error al iniciar el proceso de pago:', error);
@@ -27,6 +28,7 @@ const paymentService = {
   createPayment: async (orderId) => {
     try {
       const response = await api.post('/wb/payment/create-payment', { orderId });
+      console.log('Respuesta de creación de pago PayPal:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error al crear el pago con PayPal:', error);
@@ -42,10 +44,12 @@ const paymentService = {
    */
   capturePayment: async (paypalOrderId, orderId) => {
     try {
+      console.log('Intentando capturar pago:', { paypalOrderId, orderId });
       const response = await api.post('/wb/payment/capture-payment', { 
         paypalOrderId, 
         orderId 
       });
+      console.log('Respuesta de captura de pago:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error al capturar el pago:', error);
@@ -61,6 +65,7 @@ const paymentService = {
   cancelPayment: async (orderId) => {
     try {
       const response = await api.post('/wb/payment/cancel-payment', { orderId });
+      console.log('Respuesta de cancelación de pago:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error al cancelar el pago:', error);
@@ -76,6 +81,7 @@ const paymentService = {
   getPaymentStatus: async (orderId) => {
     try {
       const response = await api.get(`/wb/payment/status/${orderId}`);
+      console.log('Estado de pago obtenido:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error al obtener el estado del pago:', error);

@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { FaCheckCircle, FaShoppingBag, FaUser } from 'react-icons/fa';
 import orderService from '../../../services/orderService';
+import paymentService from '../../../services/paymentService';
+import notificationService from '../../../services/notificationService';
 
 /**
  * Página de éxito después de completar un pago
@@ -13,32 +15,61 @@ const PaymentSuccessPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Obtener datos de la orden desde el estado de la navegación o de la URL
+  // Procesar el retorno de PayPal y obtener datos de la orden
   useEffect(() => {
-    const fetchOrderData = async () => {
+    const completePayment = async () => {
       try {
         setLoading(true);
         
-        // Obtener el orderId del estado de location o de URL params
-        const orderId = location.state?.orderId;
+        // Obtener los parámetros de la URL (token/PayerID de PayPal)
+        const urlParams = new URLSearchParams(location.search);
+        console.log('Parámetros URL de PayPal:', Object.fromEntries(urlParams));
+        
+        // Obtener orderId del localStorage (guardado antes de redirigir a PayPal)
+        const orderId = localStorage.getItem('currentOrderId');
+        console.log('ID de orden recuperado:', orderId);
         
         if (!orderId) {
           throw new Error('No se encontró el ID de la orden');
         }
         
-        // Cargar los detalles de la orden
+        // Si hay parámetros de PayPal, procesar el pago
+        if (urlParams.has('token') || urlParams.has('paymentId') || urlParams.has('orderID')) {
+          console.log('Detectados parámetros de retorno de PayPal, procesando pago...');
+          try {
+            const result = await paymentService.processPayPalReturn(urlParams, orderId);
+            console.log('Pago procesado correctamente', result);
+            notificationService.paymentCompleted(orderId);
+          } catch (captureError) {
+            console.error('Error al capturar el pago:', captureError);
+            // Continuamos para mostrar al menos los detalles de la orden
+          }
+        }
+        
+        // Cargar los detalles de la orden actualizada
         const orderData = await orderService.getOrderById(orderId);
+        console.log('Datos de la orden cargados:', orderData);
         setOrder(orderData);
+        
+        // Limpiar el orderId de localStorage ya que ya no lo necesitamos
+        localStorage.removeItem('currentOrderId');
+        
+        // Redirigir a la página de órdenes después de 2 segundos
+        setTimeout(() => {
+          navigate('/orders');
+        }, 2000);
+        
       } catch (error) {
-        console.error('Error al obtener detalles de la orden:', error);
-        setError('No se pudieron cargar los detalles de la orden. Por favor, contacte con soporte.');
+        console.error('Error en el proceso de pago:', error);
+        setError('No se pudo completar el proceso de pago. Por favor, contacte con soporte.');
+        notificationService.paymentError(error?.message || 'Error al completar el pago');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrderData();
-  }, [location]);
+    completePayment();
+  }, [location, navigate]);
 
   if (loading) {
     return (
@@ -147,22 +178,13 @@ const PaymentSuccessPage = () => {
       )}
 
       <div className="flex flex-col md:flex-row justify-center space-y-3 md:space-y-0 md:space-x-4">
-        <Link to="/profile/orders">
-          <Button 
-            className="w-full flex items-center justify-center"
-            icon={<FaUser className="mr-2" />}
-          >
-            Ver mis pedidos
-          </Button>
+        <Link to="/orders" className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded transition duration-300 flex items-center justify-center">
+          <FaUser className="mr-2" />
+          Ver mis pedidos
         </Link>
-        <Link to="/shop">
-          <Button 
-            className="w-full flex items-center justify-center"
-            variant="outline"
-            icon={<FaShoppingBag className="mr-2" />}
-          >
-            Continuar comprando
-          </Button>
+        <Link to="/tienda" className="border border-gray-300 bg-white hover:bg-gray-100 text-gray-800 font-medium py-2 px-4 rounded transition duration-300 flex items-center justify-center">
+          <FaShoppingBag className="mr-2" />
+          Continuar comprando
         </Link>
       </div>
     </div>
