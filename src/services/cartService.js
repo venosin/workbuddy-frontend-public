@@ -34,14 +34,18 @@ const cartService = {
       
       // Filtrar para encontrar el carrito activo o pendiente del usuario actual
       const userCarts = response.data.filter(cart => {
-        console.log('Evaluando carrito:', cart._id, 'clienteId:', cart.clienteId, 'state:', cart.state);
+        // Comprobar ambos campos clientId y clienteId para mayor compatibilidad
+        console.log('Evaluando carrito:', cart._id, 'clientId:', cart.clientId, 'clienteId:', cart.clienteId, 'state:', cart.state);
         
-        // Verificar si clienteId es un objeto o un string
-        const cartClientId = cart.clienteId && typeof cart.clienteId === 'object' 
-          ? cart.clienteId._id 
-          : cart.clienteId;
+        // Verificar si alguno de los dos campos existe y obtener el ID correcto
+        let cartClientId;
+        if (cart.clientId) {
+          cartClientId = typeof cart.clientId === 'object' ? cart.clientId._id : cart.clientId;
+        } else if (cart.clienteId) {
+          cartClientId = typeof cart.clienteId === 'object' ? cart.clienteId._id : cart.clienteId;
+        }
         
-        // Incluir carritos con estado 'active' o 'pending'
+        // Incluir carritos con estado 'active' o 'pending' o sin estado definido
         return cartClientId === userId && (cart.state === 'active' || cart.state === 'pending' || !cart.state);
       });
       
@@ -81,8 +85,10 @@ const cartService = {
         }
       };
       
+      // Incluir tanto clientId como clienteId para mayor compatibilidad con el backend
       const newCart = {
-        clientId: userId,  // Cambiado de clienteId a clientId (sin la 'e')
+        clientId: userId,   // Campo correcto para nuevas versiones del backend
+        clienteId: userId, // Campo para versiones antiguas del backend (con la 'e')
         products: [],
         discountCodesId: null,
         total: 0,

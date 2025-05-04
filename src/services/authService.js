@@ -74,6 +74,7 @@ const authService = {
   // Función para verificar el código de email
   verifyEmailCode: async (verificationCode) => {
     try {
+      // Ruta correcta según el backend proporcionado
       const response = await axios.post(`${API_URL}/wb/registerClient/verifyCodeEmail`, { verificationCode });
       
       // Si la verificación es exitosa y recibimos un token, guardar información para autenticación automática

@@ -8,7 +8,7 @@ import AuthContext from '../../../contexts/AuthContext';
 
 export function RegisterPage() {
   const navigate = useNavigate();
-  const { registerAndLogin } = useContext(AuthContext);
+  const { registerAndLogin, verifyEmailCode } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: '',
     phoneNumber: '',
@@ -16,7 +16,8 @@ export function RegisterPage() {
     password: '',
     confirmPassword: '',
     address: '',
-    birthday: ''
+    birthday: '',
+    verificationCode: ''
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +25,7 @@ export function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [registerError, setRegisterError] = useState('');
   const [currentStep, setCurrentStep] = useState(1);
-  const totalSteps = 2;
+  const totalSteps = 3;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -44,6 +45,12 @@ export function RegisterPage() {
       }
       
       setFormData({ ...formData, [name]: formattedNumber });
+    } else if (name === 'verificationCode') {
+      // Formateo especial para el código de verificación (alfanumérico, máximo 6)
+      // Permitir letras y números (código generado en formato hexadecimal)
+      const alphanumeric = value.replace(/[^a-zA-Z0-9]/g, ''); // Mantener solo letras y números
+      const truncated = alphanumeric.slice(0, 6);
+      setFormData({ ...formData, [name]: truncated });
     } else {
       // Para los demás campos, comportamiento normal
       setFormData({ ...formData, [name]: value });
@@ -123,8 +130,22 @@ export function RegisterPage() {
       }
       
       if (age < 18) {
-        newErrors.birthday = 'Debes ser mayor de 18 años para registrarte';
+        newErrors.birthday = 'Debes ser mayor de edad';
       }
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validateStep3 = () => {
+    const newErrors = {};
+    
+    // Validar código de verificación
+    if (!formData.verificationCode) {
+      newErrors.verificationCode = 'El código de verificación es obligatorio';
+    } else if (formData.verificationCode.length !== 6) {
+      newErrors.verificationCode = 'El código debe tener 6 caracteres';
     }
     
     setErrors(newErrors);
@@ -134,6 +155,10 @@ export function RegisterPage() {
   const nextStep = () => {
     if (currentStep === 1 && validateStep1()) {
       setCurrentStep(2);
+      window.scrollTo(0, 0);
+    } else if (currentStep === 2) {
+      // Avanzar al paso 3 sin validación (la validación se hace en handleSubmit)
+      setCurrentStep(3);
       window.scrollTo(0, 0);
     }
   };
@@ -149,47 +174,78 @@ export function RegisterPage() {
     e.preventDefault();
     
     if (currentStep === 1) {
+      if (!validateStep1()) return;
+      // Limpiar errores al avanzar al siguiente paso
+      setErrors({});
       nextStep();
       return;
     }
     
-    if (!validateStep2()) {
+    if (currentStep === 2) {
+      // Ejecutar la validación del paso 2
+      if (!validateStep2()) return;
+      
+      // Si llegamos aquí es porque la validación fue exitosa
+      setIsLoading(true);
+      setRegisterError('');
+      setErrors({}); // Limpiar errores
+      
+      try {
+        // Preparar los datos para enviar al backend
+        const userData = {
+          name: formData.name,
+          phoneNumber: formData.phoneNumber,
+          email: formData.email,
+          password: formData.password,
+          address: formData.address,
+          birthday: formData.birthday,
+          isVerified: false, // Importante: campo requerido por el backend
+        };
+        
+        // Registrar el usuario sin iniciar sesión automáticamente
+        const response = await registerAndLogin(userData);
+        
+        console.log('Registro exitoso, se requiere verificación:', response);
+        
+        // Avanzar explícitamente al paso 3 (verificación por código)
+        setCurrentStep(3);
+        window.scrollTo(0, 0);
+      } catch (error) {
+        console.error('Error de registro:', error);
+        const errorMessage = error.message || 'Hubo un problema al crear tu cuenta. Por favor, inténtalo de nuevo.';
+        setRegisterError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
       return;
     }
     
-    setIsLoading(true);
-    setRegisterError('');
-    
-    try {
-      // Preparar los datos para enviar al backend
-      const userData = {
-        name: formData.name,
-        phoneNumber: formData.phoneNumber,
-        email: formData.email,
-        password: formData.password,
-        address: formData.address,
-        birthday: formData.birthday,
-        isVerified: true // Asumimos verificación automática para permitir el login directo
-      };
+    if (currentStep === 3) {
+      if (!validateStep3()) return;
       
-      // Usar la nueva función que registra y autentica en un solo paso
-      await registerAndLogin(userData);
+      setIsLoading(true);
+      setRegisterError('');
       
-      console.log('Registro y login exitosos');
-      
-      // Redirigir a la página principal en lugar de la verificación
-      navigate('/', { 
-        state: { 
-          email: formData.email,
-          message: '¡Usuario registrado con éxito! Tu cuenta ya está activa.'
-        } 
-      });
-    } catch (error) {
-      console.error('Error de registro:', error);
-      const errorMessage = error.message || 'Hubo un problema al crear tu cuenta. Por favor, inténtalo de nuevo.';
-      setRegisterError(errorMessage);
-    } finally {
-      setIsLoading(false);
+      try {
+        // Verificar el código de email
+        const verificationResponse = await verifyEmailCode(formData.verificationCode);
+        
+        console.log('Verificación exitosa:', verificationResponse);
+        
+        // Redirigir a la página principal
+        navigate('/', { 
+          state: { 
+            email: formData.email,
+            message: '¡Tu cuenta ha sido verificada con éxito! Ahora puedes acceder a todos los servicios.'
+          } 
+        });
+      } catch (error) {
+        console.error('Error de verificación:', error);
+        const errorMessage = error.message || 'El código de verificación es inválido. Por favor, revisa tu correo e intenta nuevamente.';
+        setRegisterError(errorMessage);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -392,8 +448,88 @@ export function RegisterPage() {
                 </div>
               )}
 
+              {currentStep === 3 && (
+                <div>
+                  <h2 className="mt-2 text-xl font-bold text-brown-900">Verificación por código</h2>
+                  <p className="text-sm text-gray-600 mb-6">
+                    Te hemos enviado un código de verificación a <span className="font-medium">{formData.email}</span>. 
+                    Por favor, revisa tu bandeja de entrada y escribe el código a continuación.                  
+                  </p>
+                  
+                  {/* Campo para código de verificación */}
+                  <div className="mb-6">
+                    <label htmlFor="verificationCode" className="block text-sm font-medium text-brown-700">
+                      Código de verificación
+                    </label>
+                    <div className="mt-1">
+                      <input
+                        id="verificationCode"
+                        name="verificationCode"
+                        type="text"
+                        autoComplete="one-time-code"
+                        value={formData.verificationCode}
+                        onChange={handleChange}
+                        maxLength={6}
+                        placeholder="123456"
+                        className={`appearance-none block w-full px-3 py-2 border ${errors.verificationCode ? 'border-red-300' : 'border-gray-300'} rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm`}
+                      />
+                      {errors.verificationCode && (
+                        <p className="mt-2 text-sm text-red-600">{errors.verificationCode}</p>
+                      )}
+                    </div>
+                    <p className="mt-2 text-xs text-gray-500">
+                      El código de verificación es de 6 caracteres alfanuméricos y se envió a tu correo electrónico.
+                    </p>
+                  </div>
+                  
+                  {/* Botones para verificación */}
+                  <div className="mt-4 flex justify-between space-x-4">
+                    <button
+                      type="button"
+                      onClick={() => setCurrentStep(2)}
+                      className="flex-1 py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-brown-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                    >
+                      Atrás
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isLoading}
+                      className="flex-1 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isLoading ? (
+                        <>
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Verificando...
+                        </>
+                      ) : (
+                        "Verificar cuenta"
+                      )}
+                    </button>
+                  </div>
+                </div>
+              )}
+              
               {currentStep === 2 && (
                 <div className="space-y-6">
+                  {Object.keys(errors).length > 0 && (
+                    <div className="bg-red-50 border-l-4 border-red-400 p-4">
+                      <div className="flex">
+                        <div className="flex-shrink-0">
+                          <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                            <path fillRule="evenodd" d="M8.485 2.495c.673-1.167 2.357-1.167 3.03 0l6.28 10.875c.673 1.167-.17 2.625-1.516 2.625H3.72c-1.347 0-2.189-1.458-1.515-2.625L8.485 2.495zM10 5a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0110 5zm0 10a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                        <div className="ml-3">
+                          <p className="text-sm text-red-700">
+                            Faltan campos obligatorios
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div>
                     <label htmlFor="phoneNumber" className="block text-sm font-medium text-brown-700">
                       Número de teléfono

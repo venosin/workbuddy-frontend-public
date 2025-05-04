@@ -137,7 +137,7 @@ export function AuthProvider({ children }) {
     setIsAuthenticated(true);
   };
 
-  // Función para registrar y autenticar en un solo paso
+  // Función para registrar usuario sin iniciar sesión automáticamente
   const registerAndLogin = async (userData) => {
     try {
       setLoading(true);
@@ -145,33 +145,47 @@ export function AuthProvider({ children }) {
       const registerResponse = await authService.registerClient(userData);
       console.log('Registro exitoso:', registerResponse);
       
-      // 2. Iniciar sesión automáticamente
-      const loginData = await authService.login(userData.email, userData.password);
-      
-      // 3. Construir objeto de usuario usando los datos de registro y login
-      const userId = loginData.userId || registerResponse.userId || 'unknown';
-      const userType = normalizeUserType(loginData.userType || 'clients');
-      
-      // 4. Crear un objeto de usuario inicial con los datos del registro
-      const newUser = {
-        _id: userId,
-        id: userId,
-        userType: userType,
-        email: userData.email,
-        name: userData.name,
-        phoneNumber: userData.phoneNumber,
-        address: userData.address,
-        birthday: userData.birthday
-      };
-      
-      // 5. Actualizar el estado
-      setUser(newUser);
-      setIsAuthenticated(true);
+      // No hacer login automáticamente, esperar verificación por código
       setLoading(false);
       
-      return registerResponse;
+      // Devolver la respuesta indicando que se requiere verificación
+      return {
+        ...registerResponse,
+        requiresVerification: true,
+        message: 'Se ha enviado un código de verificación a tu correo electrónico. Por favor verifica tu cuenta.'
+      };
     } catch (error) {
-      console.error('Error en registro con autenticación:', error);
+      console.error('Error en registro:', error);
+      setLoading(false);
+      throw error;
+    }
+  };
+
+  // Función para verificar el código de correo electrónico
+  const verifyEmailCode = async (verificationCode) => {
+    try {
+      setLoading(true);
+      const response = await authService.verifyEmailCode(verificationCode);
+      
+      if (response && response.client) {
+        // Construir objeto de usuario con los datos del cliente verificado
+        const verifiedUser = {
+          _id: response.client.id || response.client._id,
+          id: response.client.id || response.client._id,
+          userType: normalizeUserType('clients'),
+          email: response.client.email,
+          name: response.client.name || 'Usuario verificado'
+        };
+        
+        // Actualizar el estado
+        setUser(verifiedUser);
+        setIsAuthenticated(true);
+      }
+      
+      setLoading(false);
+      return response;
+    } catch (error) {
+      console.error('Error en verificación de código:', error);
       setLoading(false);
       throw error;
     }
@@ -186,6 +200,7 @@ export function AuthProvider({ children }) {
     logout,
     simulateSession,
     registerAndLogin,
+    verifyEmailCode,
     userType: authService.getUserType()
   };
 

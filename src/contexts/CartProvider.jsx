@@ -183,23 +183,63 @@ export function CartProvider({ children }) {
       // Actualizar el estado local del carrito
       setCart(updatedCart);
       
+      // Crear un mapa de productos actuales para conservar datos si es necesario
+      const currentProductsMap = {};
+      items.forEach(item => {
+        currentProductsMap[item.id] = item;
+      });
+      
       // Procesar y transformar los productos para el estado local
       if (updatedCart.products && Array.isArray(updatedCart.products)) {
         const cartItems = updatedCart.products.map(item => {
-          // Determinar si idProduct es un objeto completo o solo un ID
-          const productData = item.idProduct || {};
-          const productId = typeof productData === 'object' ? productData._id : productData;
-          const productName = typeof productData === 'object' ? productData.name : product.name;
-          const productPrice = typeof productData === 'object' ? productData.price : product.price;
+          // Obtener el ID del producto independientemente del formato
+          let productId, productObj;
+          
+          if (item.idProduct) {
+            if (typeof item.idProduct === 'object') {
+              productId = item.idProduct._id;
+              productObj = item.idProduct;
+            } else {
+              productId = item.idProduct;
+              // Buscar si ya tenemos este producto en el mapa
+              productObj = currentProductsMap[productId] || {};
+            }
+          } else if (item.product) {
+            if (typeof item.product === 'object') {
+              productId = item.product._id;
+              productObj = item.product;
+            } else {
+              productId = item.product;
+              productObj = currentProductsMap[productId] || {};
+            }
+          }
+          
+          // Si estamos procesando el producto recién agregado, usar sus datos
+          const isNewlyAddedProduct = productId === product._id;
+          
+          // Determinar los datos del producto priorizando diferentes fuentes
+          const productName = 
+            (productObj && productObj.name) || 
+            (isNewlyAddedProduct ? product.name : '') || 
+            'Producto';
+            
+          const productPrice = 
+            (productObj && productObj.price) || 
+            (isNewlyAddedProduct ? product.price : 0) || 
+            0;
+            
           const productImage = 
-            (typeof productData === 'object' && productData.imagery?.url) ||
-            product.imagery?.url ||
+            (productObj && productObj.imagery?.url) || 
+            (productObj && productObj.image) ||
+            (isNewlyAddedProduct ? (product.imagery?.url || product.image) : '') ||
             'https://placehold.co/200x200/e9d8c4/333333?text=Producto';
+          
+          console.log(`Procesando producto ${productId}: ${productName}`);
           
           return {
             id: productId,
-            name: productName || 'Producto',
-            price: productPrice || 0,
+            name: productName,
+            price: productPrice,
             quantity: item.quantity || 1,
             image: productImage
           };
