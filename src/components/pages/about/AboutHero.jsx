@@ -37,7 +37,7 @@ export const AboutHero = () => {
           
           <div className="flex justify-center opacity-0 animate-fade-in-up" style={{ animationDelay: '1.2s' }}>
             <a 
-              href="#contacto" 
+              href="/contacto" 
               className="bg-additional hover:bg-additional/90 text-white font-medium py-3 px-8 rounded-md transition-colors"
             >
               Contáctanos

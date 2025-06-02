@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AuthContext from './AuthContext';
 import authService from '../services/authService';
 import { normalizeUserType } from '../utils/userTypeUtils';
+import { useNotifications } from './NotificationContext';
 
 export function AuthProvider({ children }) {
   // Estado del usuario
@@ -12,6 +13,9 @@ export function AuthProvider({ children }) {
   
   // Estado de carga
   const [loading, setLoading] = useState(true);
+  
+  // Acceder al sistema de notificaciones
+  const { showSuccess } = useNotifications();
 
   // Cargar el usuario cuando el componente se monte
   useEffect(() => {
@@ -71,6 +75,9 @@ export function AuthProvider({ children }) {
       setUser(basicUser);
       setIsAuthenticated(true);
       
+      // Mostrar notificación de inicio de sesión exitoso
+      showSuccess(`¡Bienvenido/a ${email}!`, 'Sesión iniciada');
+      
       // IMPORTANTE: Usar Promise para garantizar que los estados se actualicen completamente
       // antes de resolver la promesa del login
       return new Promise((resolve) => {
@@ -106,9 +113,16 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     try {
       setLoading(true);
+      
+      // Guardar el nombre del usuario antes de cerrar sesión para la notificación
+      const userName = user?.name || 'Usuario';
+      
       await authService.logout();
       setUser(null);
       setIsAuthenticated(false);
+      
+      // Mostrar notificación de cierre de sesión exitoso
+      showSuccess(`¡Hasta pronto, ${userName}!`, 'Sesión cerrada');
     } catch (error) {
       console.error('Error al cerrar sesión:', error);
     } finally {
@@ -135,6 +149,9 @@ export function AuthProvider({ children }) {
     localStorage.setItem('userId', '123456789');
     setUser(demoUser);
     setIsAuthenticated(true);
+    
+    // Mostrar notificación de inicio de sesión de demostración
+    showSuccess('¡Bienvenido/a Usuario Demo!', 'Sesión de demostración iniciada');
   };
 
   // Función para registrar usuario sin iniciar sesión automáticamente

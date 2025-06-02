@@ -61,11 +61,11 @@ function NotificationInitializer() {
 
 function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <NotificationProvider>
-          <NotificationInitializer />
-          <NotificationContainer />
+    <NotificationProvider>
+      <NotificationInitializer />
+      <NotificationContainer />
+      <AuthProvider>
+        <CartProvider>
           <CookieBanner />
           <Routes>
         <Route path="/" element={<HomePage />} />
@@ -121,9 +121,9 @@ function App() {
           </div>
         } />
         </Routes>
-        </NotificationProvider>
-      </CartProvider>
-    </AuthProvider>
+        </CartProvider>
+      </AuthProvider>
+    </NotificationProvider>
   )
 }
 
