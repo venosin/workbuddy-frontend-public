@@ -6,6 +6,7 @@ import { TiendaPage } from './components/pages/tienda/TiendaPage'
 import { ProductDetail } from './components/pages/tienda/ProductDetail'
 import { AboutPage } from './components/pages/about/AboutPage'
 import { ContactPage } from './components/pages/contact/ContactPage'
+import { OffersPage } from './components/pages/offers/OffersPage'
 import { PrivacyPolicyPage } from './components/pages/legal/PrivacyPolicyPage'
 import { TermsOfServicePage } from './components/pages/legal/TermsOfServicePage'
 import { CookieSettingsPage } from './components/pages/legal/CookieSettingsPage'
@@ -70,6 +71,7 @@ function App() {
           <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/tienda" element={<TiendaPage />} />
+        <Route path="/ofertas" element={<OffersPage />} />
         <Route path="/productos/:id" element={<ProductDetail />} />
         <Route path="/nosotros" element={<AboutPage />} />
         <Route path="/contacto" element={<ContactPage />} />

@@ -5,9 +5,11 @@ import { HeroSection } from "./sections/HeroSection"
 import { SearchBar } from "./sections/SearchBar"
 import { ProductsSection } from "./sections/ProductsSection"
 import productsService from '../../../services/productsService'
+import offersService from '../../../services/offersService'
 
 export function TiendaPage() {
   const [products, setProducts] = useState([])
+  const [offers, setOffers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
@@ -94,36 +96,66 @@ export function TiendaPage() {
     }
   ], []);
 
-  // Cargar productos al inicio
+  // Cargar productos y ofertas al inicio
   useEffect(() => {
     // Iniciar usando los productos de ejemplo para garantizar que algo se muestre
     setProducts(sampleProducts);
+    
+    // Inicializar ofertas con ejemplos
+    const sampleOffers = offersService.getSampleOffers();
+    setOffers(sampleOffers);
+    
     setIsLoading(false);
     
-    // Intentar cargar desde el API
-    const fetchProducts = async () => {
+    // Intentar cargar productos y ofertas desde el API
+    const fetchData = async () => {
       try {
         setIsLoading(true);
-        let data;
+        
+        // Intentar obtener productos
+        let productData;
         try {
           // Intentar obtener datos de la API
-          data = await productsService.getProducts();
+          productData = await productsService.getProducts();
           // Solo actualizar si hay datos
-          if (data && data.length > 0) {
-            setProducts(data);
+          if (productData && productData.length > 0) {
+            setProducts(productData);
           } else {
             // Si no hay datos, usar los de ejemplo
-            console.log('La API devolvió un array vacío, usando datos de ejemplo');
-            data = sampleProducts;
+            console.log('La API de productos devolvió un array vacío, usando datos de ejemplo');
+            productData = sampleProducts;
           }
         } catch (apiError) {
-          console.warn('Error al conectar con la API, usando datos de ejemplo:', apiError);
+          console.warn('Error al conectar con la API de productos, usando datos de ejemplo:', apiError);
           // Si falla, usar datos de ejemplo
-          data = sampleProducts;
+          productData = sampleProducts;
         }
         
-        setProducts(data);
-        setError(null);
+        // Intentar obtener ofertas
+        let offerData;
+        try {
+          // Intentar obtener datos de la API de ofertas
+          offerData = await offersService.getOffers();
+          // Solo actualizar si hay datos y están poblados con productos
+          if (offerData && offerData.length > 0 && offerData[0].productId) {
+            // Filtrar solo ofertas activas y válidas
+            const activeOffers = offersService.filterActiveOffers(offerData);
+            setOffers(activeOffers);
+          } else {
+            // Si no hay datos, usar los de ejemplo
+            console.log('La API de ofertas devolvió un array vacío o sin productos poblados, usando datos de ejemplo');
+            offerData = offersService.getSampleOffers();
+            setOffers(offerData);
+          }
+        } catch (apiError) {
+          console.warn('Error al conectar con la API de ofertas, usando datos de ejemplo:', apiError);
+          // Si falla, usar datos de ejemplo
+          offerData = offersService.getSampleOffers();
+          setOffers(offerData);
+        }
+        
+        setProducts(productData);
+        setOffers(offerData);
       } catch (err) {
         console.error('Error al cargar productos:', err);
         // Si todo falla, cargar datos de ejemplo
@@ -134,7 +166,7 @@ export function TiendaPage() {
       }
     };
 
-    fetchProducts();
+    fetchData();
   }, [sampleProducts]);
 
   // Manejar búsquedas
@@ -222,6 +254,17 @@ export function TiendaPage() {
 
       {!isLoading && (
         <>
+          {/* Sección de Ofertas siempre se muestra primero y solo cuando no hay búsqueda activa */}
+          {!searchTerm && offers.length > 0 && (
+            <ProductsSection 
+              id="special-offers" 
+              title="Ofertas Especiales" 
+              products={offers} 
+              isOfferSection={true}
+              bgColor="bg-amber-100"
+            />
+          )}
+          
           {searchTerm ? (
             <ProductsSection id="search-results" title={`Resultados para "${searchTerm}"`} products={products} />
           ) : (

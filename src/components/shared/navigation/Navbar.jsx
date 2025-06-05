@@ -70,8 +70,8 @@ export function Navbar() {
           <Link to="/nosotros" className="text-sm hover:text-green-300 transition-colors">
             Nosotros
           </Link>
-          <Link to="/productos" className="text-sm hover:text-green-300 transition-colors">
-            Productos
+          <Link to="/ofertas" className="text-sm hover:text-green-300 transition-colors">
+            Ofertas
           </Link>
         </nav>
 
