@@ -20,18 +20,18 @@ export const OurHistory = () => {
           </div>
           
           <div className="md:w-1/2">
-            <h2 className="animated-heading text-contrast shine-effect">Nuestra Historia</h2>
+            <h2 className="animated-heading text-contrast shine-effect font-sans">Nuestra Historia</h2>
             <div className="animated-divider bg-accent"></div>
             
-            <p className="text-contrast/80 mb-6 font-body opacity-0 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+            <p className="text-contrast/80 mb-6 font-sans opacity-0 animate-fade-in" style={{ animationDelay: '0.6s' }}>
               WorkBuddy nació en 2022 con una visión clara: transformar la manera en que las personas interactúan con los espacios de trabajo. Fundada por un grupo de profesionales apasionados por el diseño y la innovación, nuestra empresa ha crecido hasta convertirse en un referente en la industria inmobiliaria.
             </p>
             
-            <p className="text-contrast/80 mb-6 font-body opacity-0 animate-fade-in" style={{ animationDelay: '0.8s' }}>
+            <p className="text-contrast/80 mb-6 font-sans opacity-0 animate-fade-in" style={{ animationDelay: '0.8s' }}>
               Lo que comenzó como una pequeña startup se ha convertido en una plataforma robusta que conecta personas con propiedades que se adaptan perfectamente a sus necesidades, ofreciendo siempre una experiencia intuitiva y atractiva.
             </p>
             
-            <p className="text-contrast/80 font-body opacity-0 animate-fade-in" style={{ animationDelay: '1s' }}>
+            <p className="text-contrast/80 font-sans opacity-0 animate-fade-in" style={{ animationDelay: '1s' }}>
               Hoy en día, seguimos comprometidos con nuestra misión original, mejorando constantemente nuestra plataforma y ampliando nuestros servicios para ofrecer la mejor experiencia posible a nuestros usuarios.
             </p>
           </div>

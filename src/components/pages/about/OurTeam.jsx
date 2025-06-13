@@ -36,9 +36,9 @@ export const OurTeam = () => {
     <section className="py-16 bg-white px-4 sm:px-6 lg:px-8" id="equipo">
       <div className="container mx-auto">
         <div className="text-center mb-16">
-          <h2 className="animated-heading text-contrast shine-effect">Nuestro Equipo</h2>
+          <h2 className="animated-heading text-contrast shine-effect font-sans">Nuestro Equipo</h2>
           <div className="animated-divider bg-accent mx-auto"></div>
-          <p className="text-contrast/80 max-w-2xl mx-auto font-body opacity-0 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <p className="text-contrast/80 max-w-2xl mx-auto font-sans opacity-0 animate-fade-in" style={{ animationDelay: '0.6s' }}>
             Conozca a las personas detrás de WorkBuddy, profesionales apasionados que trabajan para ofrecerle la mejor experiencia inmobiliaria.
           </p>
         </div>
@@ -62,9 +62,9 @@ export const OurTeam = () => {
               </div>
               
               <div className="p-6">
-                <h3 className="text-xl font-serif font-bold text-contrast mb-1">{member.name}</h3>
-                <p className="text-accent mb-4 font-medium">{member.role}</p>
-                <p className="text-contrast/80 font-body">{member.bio}</p>
+                <h3 className="text-xl font-sans font-bold text-contrast mb-1">{member.name}</h3>
+                <p className="text-accent mb-4 font-sans font-medium">{member.role}</p>
+                <p className="text-contrast/80 font-sans">{member.bio}</p>
                 
                 <div className="mt-4 flex space-x-3">
                   <a href="#" className="text-contrast hover:text-accent transition-colors">

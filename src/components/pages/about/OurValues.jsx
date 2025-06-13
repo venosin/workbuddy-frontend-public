@@ -28,9 +28,9 @@ export const OurValues = () => {
     <section className="py-16 bg-primary px-4 sm:px-6 lg:px-8">
       <div className="container mx-auto">
         <div className="text-center mb-12">
-          <h2 className="animated-heading text-contrast shine-effect">Nuestros Valores</h2>
+          <h2 className="animated-heading text-contrast shine-effect font-sans">Nuestros Valores</h2>
           <div className="animated-divider bg-accent mx-auto"></div>
-          <p className="text-contrast/80 max-w-2xl mx-auto font-body opacity-0 animate-fade-in" style={{ animationDelay: '0.6s' }}>
+          <p className="text-contrast/80 max-w-2xl mx-auto font-sans opacity-0 animate-fade-in" style={{ animationDelay: '0.6s' }}>
             Estos son los principios que guían cada decisión que tomamos y cada interacción con nuestros clientes.
           </p>
         </div>
@@ -43,8 +43,8 @@ export const OurValues = () => {
               style={{ animationDelay: `${0.3 + index * 0.2}s` }}
             >
               <div className="text-4xl mb-4">{value.icon}</div>
-              <h3 className="text-xl font-serif font-bold text-contrast mb-3">{value.title}</h3>
-              <p className="text-contrast/80 font-body">{value.description}</p>
+              <h3 className="text-xl font-sans font-bold text-contrast mb-3">{value.title}</h3>
+              <p className="text-contrast/80 font-sans">{value.description}</p>
             </div>
           ))}
         </div>

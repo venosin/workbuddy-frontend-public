@@ -54,16 +54,16 @@ export function HeroSection() {
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex flex-col md:flex-row items-center">
           <div className="md:w-1/2 mb-8 md:mb-0">
-            <h1 ref={titleRef} className="text-4xl md:text-5xl lg:text-6xl font-display font-bold text-contrast mb-4">
+            <h1 ref={titleRef} className="text-4xl md:text-5xl lg:text-6xl font-sans font-bold text-contrast mb-4">
               Transforma Tu Oficina
             </h1>
-            <p className="text-contrast/80 mb-6 max-w-md font-body text-lg opacity-0 animate-fade-in" style={{animationDelay: '0.5s', animationFillMode: 'forwards'}}>
+            <p className="text-contrast/80 mb-6 max-w-md font-sans text-lg opacity-0 animate-fade-in" style={{animationDelay: '0.5s', animationFillMode: 'forwards'}}>
               Descubre nuestra selección de elementos de oficina ergonómicos y elegantes para trabajo remoto.
             </p>
             <div className="opacity-0 animate-fade-in" style={{animationDelay: '0.8s', animationFillMode: 'forwards'}}>
               <a
                 href="#products"
-                className="inline-block bg-additional text-white px-6 py-3 rounded-md hover:bg-additional/90 transition-colors"
+                className="inline-block bg-additional text-white px-6 py-3 rounded-md hover:bg-additional/90 transition-colors font-sans"
               >
                 Ver Nuestra Colección
               </a>

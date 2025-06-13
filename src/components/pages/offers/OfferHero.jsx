@@ -6,22 +6,22 @@ export function OfferHero() {
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row items-center justify-between">
           <div className="md:w-1/2 mb-8 md:mb-0">
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h1 className="text-4xl md:text-5xl font-sans font-bold text-white mb-4">
               Ofertas Especiales
             </h1>
-            <p className="text-lg text-white mb-6 max-w-lg">
+            <p className="text-lg text-white mb-6 max-w-lg font-sans">
               Descubre nuestras mejores promociones y aprovecha los descuentos en productos seleccionados para mejorar tu espacio de trabajo.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link
                 to="/tienda"
-                className="bg-white text-amber-600 hover:bg-amber-50 px-6 py-3 rounded-md font-medium transition-colors"
+                className="bg-white text-amber-600 hover:bg-amber-50 px-6 py-3 rounded-md font-sans font-medium transition-colors"
               >
                 Ver todos los productos
               </Link>
               <a
                 href="#ofertas"
-                className="bg-amber-800 text-white hover:bg-amber-900 px-6 py-3 rounded-md font-medium transition-colors"
+                className="bg-amber-800 text-white hover:bg-amber-900 px-6 py-3 rounded-md font-sans font-medium transition-colors"
               >
                 Ver ofertas
               </a>

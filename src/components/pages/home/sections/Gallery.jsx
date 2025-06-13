@@ -6,33 +6,33 @@ export function Gallery() {
     {
       title: "Precios Accesibles",
       description: "Productos de calidad que no vaciarán tu bolsillo, haciendo que la ergonomía sea accesible.",
-      image: "/placeholder.svg?height=300&width=400",
+      image: "/images/accesibles.png",
     },
     {
       title: "Opciones Personalizables",
       description: "Haz que tu espacio de trabajo refleje tu personalidad con accesorios personalizados.",
-      image: "/placeholder.svg?height=300&width=400",
+      image: "/images/personalizables.png",
     },
     {
       title: "Diseño Minimalista",
       description: "Limpio y elegante diseño que mejora tu productividad sin distracciones.",
-      image: "/placeholder.svg?height=300&width=400",
+      image: "/images/minimalista.png",
     },
     {
       title: "Garantía de Calidad",
       description: "Nos enorgullecemos de nuestros productos, ofreciendo calidad y durabilidad.",
-      image: "/placeholder.svg?height=300&width=400",
+      image: "/images/calidad.png",
     },
     {
       title: "Experiencia Amigable",
       description: "Compra fácil y rápida con un servicio que realmente se preocupa por ti.",
-      image: "/placeholder.svg?height=300&width=400",
+      image: "/images/amigable.png",
     },
     {
       title: "Prácticas Sostenibles",
       description:
         "Comprometidos con la sostenibilidad, ofreciendo productos que son buenos para ti y para el planeta.",
-      image: "/placeholder.svg?height=300&width=400",
+      image: "/images/sostenibles.png",
     },
   ]
 

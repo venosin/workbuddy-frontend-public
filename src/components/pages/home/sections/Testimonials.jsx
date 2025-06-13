@@ -120,7 +120,7 @@ export function Testimonials() {
     return (
       <section className="bg-brown-800 py-16 text-white">
         <div className="container mx-auto px-4 md:px-8">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-center mb-12">Lo Que Dicen Nuestros Clientes</h2>
+          <h2 className="text-3xl md:text-4xl font-sans font-bold text-center mb-12">Lo Que Dicen Nuestros Clientes</h2>
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
           </div>
@@ -132,7 +132,7 @@ export function Testimonials() {
   return (
     <section className="bg-brown-800 py-16 text-white">
       <div className="container mx-auto px-4 md:px-8">
-        <h2 className="text-3xl md:text-4xl font-serif font-bold text-center mb-12">Lo Que Dicen Nuestros Clientes</h2>
+        <h2 className="text-3xl md:text-4xl font-sans font-bold text-center mb-12">Lo Que Dicen Nuestros Clientes</h2>
 
         {error && <p className="text-center text-yellow-400 mb-4">{error}</p>}
 
@@ -152,9 +152,9 @@ export function Testimonials() {
                         <div className="flex mb-2">
                           {renderStars(testimonial?.score)}
                         </div>
-                        <p className="text-sm mb-4">{testimonial?.comment || 'Sin comentario'}</p>
+                        <p className="text-sm mb-4 font-sans">{testimonial?.comment || 'Sin comentario'}</p>
                         <div>
-                          <p className="font-medium">{testimonial?.clientId?.name || 'Cliente'}</p>
+                          <p className="font-medium font-sans">{testimonial?.clientId?.name || 'Cliente'}</p>
                           {testimonial?.productId?.name && (
                             <p className="text-xs italic text-brown-400 mt-1">
                               Sobre: {testimonial.productId.name}
@@ -181,9 +181,9 @@ export function Testimonials() {
                       <div className="flex mb-2">
                         {renderStars(testimonial.score)}
                       </div>
-                      <p className="text-sm mb-4">{testimonial.comment}</p>
+                      <p className="text-sm mb-4 font-sans">{testimonial.comment}</p>
                       <div>
-                        <p className="font-medium">{testimonial.clientId?.name || 'Cliente'}</p>
+                        <p className="font-medium font-sans">{testimonial.clientId?.name || 'Cliente'}</p>
                         {testimonial.productId && (
                           <p className="text-xs italic text-brown-400 mt-1">
                             Sobre: {testimonial.productId.name}

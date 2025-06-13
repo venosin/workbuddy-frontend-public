@@ -33,6 +33,15 @@ export function CartProvider({ children }) {
       return;
     }
     
+    // No intentar cargar carrito si el usuario es administrador
+    if (user && user.role === 'admin') {
+      console.log('Usuario administrador detectado, no se carga carrito');
+      setCartId(null);
+      setCart(null);
+      setItems([]);
+      return;
+    }
+    
     try {
       console.log('Intentando cargar carrito para usuario:', user?._id);
       setLoading(true);
@@ -131,10 +140,37 @@ export function CartProvider({ children }) {
   
   // Cargar carrito cuando el usuario está autenticado
   useEffect(() => {
-    if (isAuthenticated && user) {
-      loadCart();
+    // Solo proceder si tenemos información clara sobre la autenticación
+    if (isAuthenticated === null) {
+      // Estado de autenticación aún no determinado, esperamos
+      console.log('Estado de autenticación aún no determinado, esperando...');
+      return;
+    }
+    
+    // Si el usuario está autenticado y tenemos la información completa
+    if (isAuthenticated && user && typeof user === 'object') {
+      // Verificar que tengamos la información completa del usuario, incluido el rol
+      if (user._id && user.role) {
+        // Solo cargar carrito si NO es un administrador
+        if (user.role !== 'admin') {
+          console.log('Usuario normal detectado, cargando carrito...');
+          loadCart();
+        } else {
+          console.log('Usuario administrador, no se requiere carrito');
+          // Limpiar el estado del carrito para administradores
+          setCart(null);
+          setCartId(null);
+          setItems([]);
+          setDiscountApplied(false);
+          setDiscountAmount(0);
+        }
+      } else {
+        // La información del usuario no está completa, esperamos
+        console.log('Información del usuario incompleta, esperando datos completos...');
+      }
     } else {
       // Si no está autenticado, limpiar el carrito
+      console.log('Usuario no autenticado o sin información, limpiando carrito');
       setCart(null);
       setCartId(null);
       setItems([]);

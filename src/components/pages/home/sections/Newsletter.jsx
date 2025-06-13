@@ -6,10 +6,10 @@ export function Newsletter() {
       <div className="container mx-auto px-4 md:px-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="md:w-1/2">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-brown-900 mb-4">
+            <h2 className="text-3xl md:text-4xl font-sans font-bold text-brown-900 mb-4">
               ¡Únete a nuestra comunidad!
             </h2>
-            <p className="text-brown-700 mb-6">Descubre cómo mejorar tu espacio de trabajo.</p>
+            <p className="text-brown-700 mb-6 font-sans">Descubre cómo mejorar tu espacio de trabajo.</p>
             <Link
               to="/explorar"
               className="inline-block bg-green-500 text-white px-6 py-3 rounded-md hover:bg-green-600 transition-colors"
@@ -27,8 +27,8 @@ export function Newsletter() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-medium text-brown-900">Soporte Ergonómico</h3>
-                  <p className="text-sm text-brown-700">Mejora tu postura mientras trabajas.</p>
+                  <h3 className="font-medium text-brown-900 font-sans">Soporte Ergonómico</h3>
+                  <p className="text-sm text-brown-700 font-sans">Mejora tu postura mientras trabajas.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -38,8 +38,8 @@ export function Newsletter() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-medium text-brown-900">Iluminación Ajustable</h3>
-                  <p className="text-sm text-brown-700">Redefine tu espacio de manera eficiente.</p>
+                  <h3 className="font-medium text-brown-900 font-sans">Iluminación Ajustable</h3>
+                  <p className="text-sm text-brown-700 font-sans">Redefine tu espacio de manera eficiente.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -49,8 +49,8 @@ export function Newsletter() {
                   </svg>
                 </div>
                 <div>
-                  <h3 className="font-medium text-brown-900">Organización Inteligente</h3>
-                  <p className="text-sm text-brown-700">Mantén tu espacio ordenado y funcional.</p>
+                  <h3 className="font-medium text-brown-900 font-sans">Organización Inteligente</h3>
+                  <p className="text-sm text-brown-700 font-sans">Mantén tu espacio ordenado y funcional.</p>
                 </div>
               </li>
             </ul>

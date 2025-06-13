@@ -48,7 +48,7 @@ export function OffersPage() {
       <OfferHero />
       
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8">Ofertas Especiales</h1>
+        <h1 className="text-3xl font-sans font-bold text-center mb-8">Ofertas Especiales</h1>
         
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
@@ -56,12 +56,12 @@ export function OffersPage() {
           </div>
         ) : error ? (
           <div className="text-center py-10">
-            <p className="text-red-500">{error}</p>
+            <p className="text-red-500 font-sans">{error}</p>
           </div>
         ) : offers.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-lg text-gray-500">No hay ofertas disponibles actualmente.</p>
-            <p className="mt-2">¡Vuelve pronto para descubrir nuevas promociones!</p>
+            <p className="text-lg text-gray-500 font-sans">No hay ofertas disponibles actualmente.</p>
+            <p className="mt-2 font-sans">¡Vuelve pronto para descubrir nuevas promociones!</p>
           </div>
         ) : (
           <div className="bg-amber-50 rounded-lg p-6 mb-8">
