@@ -25,12 +25,37 @@ const authService = {
         
         // Guardar el tipo de usuario para verificaciones locales
         const userType = normalizeUserType(response.data.userType || messageUserType || 'clients');
-        const userId = response.data.userId || response.data.user?._id || '';
+        // Asegurar que siempre tenemos un userId, ya sea de la respuesta o del campo user
+        const userId = response.data.userId || response.data.user?._id || response.data.user?.id || '';
+        
+        if (!userId) {
+          console.warn('No se encontró userId en la respuesta del login');
+          
+          // Intenta extraer el userId del token si está en formato JWT
+          try {
+            const tokenParts = response.data.token.split('.');
+            if (tokenParts.length === 3) {
+              const tokenPayload = JSON.parse(atob(tokenParts[1]));
+              if (tokenPayload.id || tokenPayload._id || tokenPayload.userId || tokenPayload.sub) {
+                const extractedId = tokenPayload.id || tokenPayload._id || tokenPayload.userId || tokenPayload.sub;
+                console.log('UserId extraído del token:', extractedId);
+                localStorage.setItem('userId', extractedId);
+              }
+            }
+          } catch (e) {
+            console.error('Error al procesar el token JWT:', e);
+          }
+        } else {
+          localStorage.setItem('userId', userId);
+        }
         
         localStorage.setItem('userType', userType);
-        localStorage.setItem('userId', userId);
         
-        console.log('Datos guardados en localStorage:', { token: 'TOKEN-GUARDADO', userType, userId }); // Para debug
+        console.log('Datos guardados en localStorage:', { 
+          token: 'TOKEN-GUARDADO', 
+          userType, 
+          userId: localStorage.getItem('userId') 
+        }); // Para debug
       } else {
         console.warn('No se recibió token en la respuesta del login');
       }
@@ -119,10 +144,36 @@ const authService = {
   getCurrentUser: async () => {
     try {
       const token = localStorage.getItem('token');
-      const userId = localStorage.getItem('userId');
+      let userId = localStorage.getItem('userId');
       
-      if (!token || !userId) {
-        console.warn('No hay token o userId para obtener el perfil');
+      if (!token) {
+        console.warn('No hay token para obtener el perfil');
+        return null;
+      }
+      
+      // Si tenemos token pero no userId, intentamos extraerlo del token
+      if (!userId && token) {
+        try {
+          // Intentar extraer userId del JWT token
+          const tokenParts = token.split('.');
+          if (tokenParts.length === 3) {
+            const tokenPayload = JSON.parse(atob(tokenParts[1]));
+            userId = tokenPayload.id || tokenPayload._id || tokenPayload.userId || tokenPayload.sub;
+            
+            if (userId) {
+              console.log('UserId extraído del token JWT:', userId);
+              localStorage.setItem('userId', userId);
+            } else {
+              console.warn('No se pudo extraer userId del token JWT');
+            }
+          }
+        } catch (e) {
+          console.error('Error al procesar el token JWT:', e);
+        }
+      }
+      
+      if (!userId) {
+        console.warn('No se pudo obtener userId para el perfil');
         return null;
       }
       
