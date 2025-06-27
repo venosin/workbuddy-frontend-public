@@ -6,13 +6,32 @@ const API_URL = 'http://localhost:4000';
 // Configura axios para que incluya las cookies en las solicitudes
 axios.defaults.withCredentials = true;
 
+// Función auxiliar para obtener el token y crear la configuración
+const getAuthConfig = () => {
+  const token = localStorage.getItem('token');
+  const userId = localStorage.getItem('userId');
+  
+  // Verificar que hay autenticación
+  if (!token || !userId) {
+    console.warn('No hay token o userId para la autenticación de favoritos');
+  }
+
+  return {
+    headers: {
+      Authorization: token ? `Bearer ${token}` : ''
+    }
+  };
+};
+
 const favoritesService = {
   // Obtener los productos favoritos del usuario
   getFavorites: async () => {
     try {
-      const response = await axios.get(`${API_URL}/wb/favorites`);
+      const config = getAuthConfig();
+      const response = await axios.get(`${API_URL}/wb/favorites`, config);
       return response.data;
     } catch (error) {
+      console.error('Error obteniendo favoritos:', error);
       throw error.response ? error.response.data : new Error('Error al obtener favoritos');
     }
   },
@@ -20,9 +39,11 @@ const favoritesService = {
   // Agregar un producto a favoritos
   addToFavorites: async (productId) => {
     try {
-      const response = await axios.post(`${API_URL}/wb/favorites/${productId}`);
+      const config = getAuthConfig();
+      const response = await axios.post(`${API_URL}/wb/favorites/${productId}`, {}, config);
       return response.data;
     } catch (error) {
+      console.error('Error agregando a favoritos:', error);
       throw error.response ? error.response.data : new Error('Error al agregar a favoritos');
     }
   },
@@ -30,9 +51,11 @@ const favoritesService = {
   // Eliminar un producto de favoritos
   removeFromFavorites: async (productId) => {
     try {
-      const response = await axios.delete(`${API_URL}/wb/favorites/${productId}`);
+      const config = getAuthConfig();
+      const response = await axios.delete(`${API_URL}/wb/favorites/${productId}`, config);
       return response.data;
     } catch (error) {
+      console.error('Error eliminando de favoritos:', error);
       throw error.response ? error.response.data : new Error('Error al eliminar de favoritos');
     }
   },
